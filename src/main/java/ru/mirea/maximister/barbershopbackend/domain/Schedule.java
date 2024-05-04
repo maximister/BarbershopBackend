@@ -3,7 +3,8 @@ package ru.mirea.maximister.barbershopbackend.domain;
 import jakarta.persistence.*;
 import lombok.Data;
 
-import java.time.OffsetDateTime;
+import java.sql.Time;
+import java.util.Date;
 
 @Entity
 @Table(name="schedule")
@@ -12,9 +13,8 @@ public class Schedule {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
-    private OffsetDateTime date;
+    private Date date;
+    private Time time;
     private Boolean status;
     private Long barberId;
-
-    //TODO: время не должно превышать время работы салона!!
 }

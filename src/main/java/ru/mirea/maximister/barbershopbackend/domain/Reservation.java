@@ -3,7 +3,8 @@ package ru.mirea.maximister.barbershopbackend.domain;
 import jakarta.persistence.*;
 import lombok.Data;
 
-import java.time.OffsetDateTime;
+import java.sql.Time;
+import java.util.Date;
 
 @Entity
 @Table(name="reservation")
@@ -12,7 +13,8 @@ public class Reservation {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
-    private OffsetDateTime date;
+    private Date date;
+    private Time time;
     private String status;
     private Long serviceId;
     private Long barberId;

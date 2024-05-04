@@ -1,6 +1,7 @@
 package ru.mirea.maximister.barbershopbackend.domain;
 
 import jakarta.persistence.*;
+import lombok.Builder;
 import lombok.Data;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
@@ -14,6 +15,7 @@ import java.util.Set;
 @Entity
 @Table(name = "users")
 @Data
+@Builder
 public class User implements UserDetails {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -22,7 +24,7 @@ public class User implements UserDetails {
     @Column(unique = true)
     private String email;
     private String phoneNumber;
-    private String name;
+    private String fullname;
     private boolean isActive;
     private LocalDateTime dateOfCreation;
 
@@ -35,6 +37,12 @@ public class User implements UserDetails {
     @Enumerated(EnumType.STRING)
     private Set<Role> roles = new HashSet<>();
 
+
+    @ManyToMany(mappedBy = "barbers")
+    private Set<Service> services = new HashSet<>();
+
+    @ManyToOne
+    private Barbershop barbershop;
 
     @PrePersist
     private void init() {
