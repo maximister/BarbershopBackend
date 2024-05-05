@@ -5,6 +5,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import ru.mirea.maximister.barbershopbackend.domain.Barbershop;
+import ru.mirea.maximister.barbershopbackend.domain.User;
 import ru.mirea.maximister.barbershopbackend.dto.barbershop.requests.*;
 import ru.mirea.maximister.barbershopbackend.dto.barbershop.responses.BarbershopBarbersResponse;
 import ru.mirea.maximister.barbershopbackend.dto.barbershop.responses.BarbershopList;
@@ -12,6 +13,7 @@ import ru.mirea.maximister.barbershopbackend.dto.mappers.BarbershopToBarbershopR
 import ru.mirea.maximister.barbershopbackend.dto.mappers.UserToResponsesMapper;
 import ru.mirea.maximister.barbershopbackend.repository.BarbershopRepository;
 import ru.mirea.maximister.barbershopbackend.repository.ServiceRepository;
+import ru.mirea.maximister.barbershopbackend.repository.UserRepository;
 
 import java.time.OffsetTime;
 import java.time.ZoneOffset;
@@ -22,6 +24,7 @@ import java.util.stream.Collectors;
 @Slf4j
 public class BarbershopService {
     private final BarbershopRepository barbershopRepository;
+    private final UserRepository userRepository;
     private final ServiceRepository serviceRepository;
     private final BarbershopToBarbershopResponseMapper barbershopMapper;
     private final UserToResponsesMapper userMapper;
@@ -197,7 +200,25 @@ public class BarbershopService {
     }
 
     @Transactional
-    public void deleteBarbershopService(DeleteBarbershopRequest request) {
-        //TODO: дописать
+    public void deleteBarbershopService(DeleteBarbershopServiceRequest request) {
+        Barbershop barbershop = getBarbershopByAddress(request.city(), request.street(), request.number());
+        ru.mirea.maximister.barbershopbackend.domain.Service service
+                = serviceRepository.findByName(request.serviceName())
+                .orElseThrow(() -> {
+                    log.info("No such service {}", request.serviceName());
+                    //TODO: custom error
+                    return new IllegalArgumentException();
+                });
+
+        barbershop.deleteService(service);
+
+        for (User barber: barbershop.getBarbers()) {
+            barber.deleteService(service);
+            userRepository.save(barber);
+        }
+
+        barbershopRepository.save(barbershop);
+
+        //TODO: проверить удаление
     }
 }

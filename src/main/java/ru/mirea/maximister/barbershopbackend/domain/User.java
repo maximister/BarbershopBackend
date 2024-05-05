@@ -52,6 +52,10 @@ public class User implements UserDetails {
         services.add(service);
         service.getBarbers().add(this);
     }
+    public void deleteService(Service service) {
+        services.remove(service);
+        service.getBarbers().remove(this);
+    }
 
     @PrePersist
     private void init() {

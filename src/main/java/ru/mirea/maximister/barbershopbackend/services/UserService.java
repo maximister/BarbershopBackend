@@ -12,6 +12,7 @@ import ru.mirea.maximister.barbershopbackend.dto.users.requests.DeleteUserReques
 import ru.mirea.maximister.barbershopbackend.dto.users.responses.AdminList;
 import ru.mirea.maximister.barbershopbackend.dto.users.responses.BarberList;
 import ru.mirea.maximister.barbershopbackend.dto.users.responses.ClientList;
+import ru.mirea.maximister.barbershopbackend.repository.ScheduleRepository;
 import ru.mirea.maximister.barbershopbackend.repository.UserRepository;
 
 import java.util.stream.Collectors;
@@ -22,6 +23,7 @@ import java.util.stream.Collectors;
 public class UserService {
     private final UserRepository userRepository;
     private final UserToResponsesMapper userToBarberResponseMapper;
+    private final ScheduleRepository scheduleRepository;
 
     @Transactional
     public User findUserById(Long id) {
@@ -36,8 +38,14 @@ public class UserService {
                 //TODO: кастомная ошибка
                 () -> new UsernameNotFoundException("")
         );
+
+        if (user.getRoles().contains(Role.ROLE_BARBER)) {
+            scheduleRepository.deleteAllByBarberId(user.getId());
+        }
+
         log.info("User {} was deleted", user.getEmail());
         userRepository.deleteById(user.getId());
+
     }
 
     @Transactional

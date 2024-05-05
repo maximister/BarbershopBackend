@@ -4,6 +4,8 @@ import jakarta.persistence.*;
 import lombok.Data;
 
 import java.sql.Time;
+import java.time.LocalDate;
+import java.time.OffsetTime;
 import java.util.Date;
 
 @Entity
@@ -13,8 +15,8 @@ public class Reservation {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
-    private Date date;
-    private Time time;
+    private LocalDate date;
+    private OffsetTime time;
     private String status;
     private Long serviceId;
     private Long barberId;

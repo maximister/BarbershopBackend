@@ -15,6 +15,7 @@ import ru.mirea.maximister.barbershopbackend.dto.service.requests.AddServiceRequ
 import ru.mirea.maximister.barbershopbackend.dto.service.requests.DeleteServiceRequest;
 import ru.mirea.maximister.barbershopbackend.repository.ServiceRepository;
 import ru.mirea.maximister.barbershopbackend.repository.UserRepository;
+import ru.mirea.maximister.barbershopbackend.utils.DateUtils;
 
 import java.time.Duration;
 
@@ -24,7 +25,7 @@ import java.time.Duration;
 public class AdminService {
     private final UserRepository userRepository;
     private final ServiceRepository serviceRepository;
-    private static final long SERVICE_DURATION_PART = 15;
+
     /**
      * Бан пользователей
      * разадача прав
@@ -78,7 +79,14 @@ public class AdminService {
 
     @Transactional
     public boolean addService(AddServiceRequest request) {
-        validateServiceDuration(request);
+        try {
+            DateUtils.validateServiceDuration(request.duration());
+        } catch (IllegalArgumentException e) {
+            log.info("Error during adding service: {}", e.getMessage());
+            //TODO: сделать кастомную ошибку, привести к ней
+            throw new IllegalArgumentException(e);
+        }
+
         Service service = Service.builder()
                 .price(request.price())
                 .name(request.name())
@@ -96,23 +104,6 @@ public class AdminService {
         }
     }
 
-    private void validateServiceDuration(AddServiceRequest request) {
-        Duration duration = request.duration();
-        if (duration.isNegative()) {
-            log.info("Service {} duration is negative",
-                    request.name()
-            );
-            //TODO: кастомная ошибка длительности с указанием причины
-            throw new IllegalArgumentException();
-        }
-        if (duration.toMinutes() % SERVICE_DURATION_PART != 0) {
-            log.info("Invalid service {} duration {}",
-                    request.name(), request.duration());
-            //TODO: кастомная ошибка длительности с указанием причины
-            throw new IllegalArgumentException();
-        }
-    }
-
     @Transactional
     public void deleteService(DeleteServiceRequest request) {
         Service service = serviceRepository.findByName(request.name())
@@ -122,7 +113,11 @@ public class AdminService {
                     return new IllegalArgumentException();
                 });
 
+        serviceRepository.deleteServiceFromBarbershops(service.getId());
+        serviceRepository.deleteServiceFromUsers(service.getId());
         serviceRepository.deleteById(service.getId());
         log.info("Successfully deleted service {}", request.name());
+
+        //TODO: проверить удаление сервиса
     }
 }

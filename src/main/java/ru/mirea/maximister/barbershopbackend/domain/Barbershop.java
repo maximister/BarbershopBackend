@@ -10,7 +10,6 @@ import lombok.NoArgsConstructor;
 import java.time.OffsetTime;
 import java.time.ZoneOffset;
 import java.util.HashSet;
-import java.util.List;
 import java.util.Set;
 
 @Entity
@@ -43,7 +42,7 @@ public class Barbershop {
             joinColumns = @JoinColumn(name = "barbershop_id"),
             inverseJoinColumns = @JoinColumn(name = "service_id")
     )
-    private List<Service> services;
+    private Set<Service> services = new HashSet<>();
 
     @OneToMany
     @JoinColumn(name = "barber_id")
@@ -58,6 +57,12 @@ public class Barbershop {
         service.getBarbershops().add(this);
         services.add(service);
     }
+
+    public void deleteService(Service service) {
+        service.getBarbershops().remove(this);
+        services.remove(service);
+    }
+
 
     public String getAddress() {
         return "City: " + city + " Street: " + street + " Number: " + number;
