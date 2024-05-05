@@ -2,7 +2,10 @@ package ru.mirea.maximister.barbershopbackend.domain;
 
 import com.fasterxml.jackson.annotation.JsonBackReference;
 import jakarta.persistence.*;
+import lombok.AllArgsConstructor;
+import lombok.Builder;
 import lombok.Data;
+import lombok.NoArgsConstructor;
 
 import java.time.OffsetTime;
 import java.time.ZoneOffset;
@@ -12,6 +15,10 @@ import java.util.Set;
 
 @Entity
 @Data
+@Table(name = "barbershop")
+@Builder
+@AllArgsConstructor
+@NoArgsConstructor
 public class Barbershop {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -45,6 +52,15 @@ public class Barbershop {
     public void addBarber(User user) {
         user.setBarbershop(this);
         barbers.add(user);
+    }
+
+    public void addService(Service service) {
+        service.getBarbershops().add(this);
+        services.add(service);
+    }
+
+    public String getAddress() {
+        return "City: " + city + " Street: " + street + " Number: " + number;
     }
 
     @PrePersist

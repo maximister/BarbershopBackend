@@ -48,6 +48,11 @@ public class User implements UserDetails {
     @ManyToOne
     private Barbershop barbershop;
 
+    public void addService(Service service) {
+        services.add(service);
+        service.getBarbers().add(this);
+    }
+
     @PrePersist
     private void init() {
         dateOfCreation = LocalDateTime.now();

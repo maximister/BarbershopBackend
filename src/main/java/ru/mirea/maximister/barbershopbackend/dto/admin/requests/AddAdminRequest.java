@@ -1,4 +1,4 @@
-package ru.mirea.maximister.barbershopbackend.dto.admin;
+package ru.mirea.maximister.barbershopbackend.dto.admin.requests;
 
 import jakarta.validation.constraints.Email;
 
