@@ -1,8 +1,10 @@
 package ru.mirea.maximister.barbershopbackend.domain;
 
 import jakarta.persistence.*;
+import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
+import lombok.NoArgsConstructor;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
 import ru.mirea.maximister.barbershopbackend.domain.enums.Role;
@@ -16,6 +18,8 @@ import java.util.Set;
 @Table(name = "users")
 @Data
 @Builder
+@AllArgsConstructor
+@NoArgsConstructor
 public class User implements UserDetails {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
