@@ -27,9 +27,9 @@ public class Service {
     private Integer price;
     private Duration duration;
 
-    @ManyToMany(mappedBy = "services")
+    @ManyToMany
     private Set<User> barbers = new HashSet<>();
 
-    @ManyToMany(mappedBy = "services")
+    @ManyToMany
     private Set<Barbershop> barbershops = new HashSet<>();
 }

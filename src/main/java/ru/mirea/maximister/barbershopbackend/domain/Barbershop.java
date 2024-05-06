@@ -45,7 +45,6 @@ public class Barbershop {
     private Set<Service> services = new HashSet<>();
 
     @OneToMany
-    @JoinColumn(name = "barber_id")
     private Set<User> barbers = new HashSet<>();
 
     public void addBarber(User user) {

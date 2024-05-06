@@ -5,6 +5,8 @@ import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
+import org.hibernate.annotations.NotFound;
+import org.hibernate.annotations.NotFoundAction;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
 import ru.mirea.maximister.barbershopbackend.domain.enums.Role;
@@ -29,7 +31,7 @@ public class User implements UserDetails {
     private String email;
     private String phoneNumber;
     private String fullname;
-    private boolean isActive;
+    private boolean active;
     private LocalDateTime dateOfCreation;
 
     @Column(length = 1000)
@@ -39,13 +41,15 @@ public class User implements UserDetails {
     @CollectionTable(name = "user_role",
             joinColumns = @JoinColumn(name = "user_id"))
     @Enumerated(EnumType.STRING)
+    @Builder.Default
     private Set<Role> roles = new HashSet<>();
 
 
     @ManyToMany(mappedBy = "barbers")
+    @Builder.Default
     private Set<Service> services = new HashSet<>();
 
-    @ManyToOne
+    @ManyToOne(cascade = {CascadeType.PERSIST, CascadeType.MERGE})
     private Barbershop barbershop;
 
     public void addService(Service service) {
@@ -90,6 +94,6 @@ public class User implements UserDetails {
 
     @Override
     public boolean isEnabled() {
-        return isActive;
+        return active;
     }
 }

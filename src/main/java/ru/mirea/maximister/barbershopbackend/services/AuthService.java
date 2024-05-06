@@ -29,7 +29,7 @@ public class AuthService {
                 .password(encoder.encode(request.password()))
                 .fullname(request.fullname())
                 .phoneNumber(request.phoneNumber())
-                .isActive(true) //TODO: добавить активацию после подтверждения аккаунта по почте
+                .active(true) //TODO: добавить активацию после подтверждения аккаунта по почте
                 .build();
 
         user.getRoles().add(Role.ROLE_USER);
@@ -50,7 +50,7 @@ public class AuthService {
                 () -> new UsernameNotFoundException("User with email " + request.email() + " not found")
         );
 
-        if (!encoder.encode(request.password()).equals(user.getPassword())) {
+        if (!encoder.matches(request.password(), user.getPassword())) {
             //TODO: добавить ошибку
             return false;
         }
@@ -66,7 +66,7 @@ public class AuthService {
                         () -> new UsernameNotFoundException("")
                 );
 
-        if (!encoder.encode(request.oldPassword()).equals(user.getPassword())) {
+        if (!encoder.matches(request.oldPassword(), user.getPassword())) {
             //TODO: кастомная ошибка о том что пароли не сходятся
             log.info("Received invalid password during changing password for user {}",
                     request.email());
@@ -81,7 +81,7 @@ public class AuthService {
         }
 
         user.setPassword(request.newPassword());
-        userRepository.setUserPassword(user.getId(), user.getPassword());
+        userRepository.setUserPassword(user.getId(), encoder.encode(request.newPassword()));
         log.info("Changed password for user {}", user.getEmail());
 
         return true;
