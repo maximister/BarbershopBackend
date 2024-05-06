@@ -171,7 +171,7 @@ public class BarberService {
     }
 
     @Transactional
-    public void deleteScheduleRequest(DeleteScheduleRequest request) {
+    public void deleteSchedule(DeleteScheduleRequest request) {
         validateTime(request.from(), request.to());
 
         LocalDate curDate = DateUtils.getClosestDateByDayOfWeek(request.dayOfWeek());

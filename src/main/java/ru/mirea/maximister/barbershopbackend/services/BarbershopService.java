@@ -33,8 +33,6 @@ public class BarbershopService {
     private static final OffsetTime MAX_OPEN_TIME =
             OffsetTime.of(22, 0, 0, 0, ZoneOffset.UTC);
 
-    //TODO: добавление и удаление услуг барбершопа
-
     @Transactional
     public boolean addBarbershop(AddBarbershopRequest request) {
         Barbershop barbershop = Barbershop.builder()
@@ -52,6 +50,7 @@ public class BarbershopService {
                 barbershop.getCity(), barbershop.getStreet(), barbershop.getNumber())
                 .isPresent()) {
             log.info("Barbershop with address {} is already exists", barbershop.getAddress());
+            //TODO: заменить на ошибку
             return false;
         } else {
             barbershopRepository.save(barbershop);
@@ -123,6 +122,7 @@ public class BarbershopService {
         log.info("Successfully updated barbershop work time by request: {}", request);
     }
 
+    //TODO: перенести в утилс мб
     private void validateBarbershopWorkTime(OffsetTime start, OffsetTime end) {
         if (end.isBefore(start) || end.equals(start)) {
             //TODO: кастомная ошибка задания даты, в описании ошибки описать причину
