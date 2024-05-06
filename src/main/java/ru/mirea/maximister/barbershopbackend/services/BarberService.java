@@ -61,7 +61,7 @@ public class BarberService {
         );
     }
 
-    private User getBarber(String email) {
+    public User getBarber(String email) {
         User barber = userRepository.findByEmail(email).orElseThrow(
                 () -> {
                     log.info("Error while searching barber {}", email);

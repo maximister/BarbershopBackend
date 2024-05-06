@@ -28,6 +28,9 @@ public interface ScheduleRepository extends JpaRepository<Schedule, Long> {
     List<Schedule> findByBarberIdAndDateAndTimeGreaterThanEqualAndTimeLessThanEqualOrderByTime(
             Long barberId, LocalDate date, OffsetTime start, OffsetTime end
     );
+    List<Schedule> findByBarberIdAndStatusAndDateAndTimeGreaterThanEqualAndTimeLessThanEqualOrderByTime(
+            Long barberId, boolean status, LocalDate date, OffsetTime start, OffsetTime end
+    );
 
     void deleteByBarberIdAndDateAndTimeGreaterThanEqualAndTimeLessThanEqualOrderByTime(
             Long barberId, LocalDate date, OffsetTime start, OffsetTime end
