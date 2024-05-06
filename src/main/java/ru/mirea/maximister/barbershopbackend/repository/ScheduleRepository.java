@@ -46,7 +46,7 @@ public interface ScheduleRepository extends JpaRepository<Schedule, Long> {
             @Param("endTime") OffsetTime endTime
     );
 
-    List<Schedule> findByBarberId(Long id);
+    List<Schedule> findByBarberIdAndStatus(Long id, boolean status);
 
     void deleteAllByBarberId(Long id);
 }
