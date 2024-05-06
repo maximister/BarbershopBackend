@@ -18,6 +18,9 @@ import ru.mirea.maximister.barbershopbackend.dto.reservation.requests.AddReserva
 import ru.mirea.maximister.barbershopbackend.dto.reservation.requests.DenyReservationRequest;
 import ru.mirea.maximister.barbershopbackend.dto.reservation.requests.GetSlotsInBarbershopRequest;
 import ru.mirea.maximister.barbershopbackend.dto.reservation.responses.*;
+import ru.mirea.maximister.barbershopbackend.exceptions.BarbershopException;
+import ru.mirea.maximister.barbershopbackend.exceptions.ReservationException;
+import ru.mirea.maximister.barbershopbackend.exceptions.ServiceNotFoundException;
 import ru.mirea.maximister.barbershopbackend.repository.ReservationRepository;
 import ru.mirea.maximister.barbershopbackend.repository.ScheduleRepository;
 import ru.mirea.maximister.barbershopbackend.repository.ServiceRepository;
@@ -64,9 +67,8 @@ public class ReservationService {
         );
 
         if (!barber.getServices().contains(service)) {
-            //TODO: custom error
             log.info("Barber {} has no {} service", barber.getEmail(), service.getName());
-            throw new IllegalArgumentException();
+            throw new BarbershopException("Barber has no service " + service.getName());
         }
 
         Reservation reservation = Reservation.builder()
@@ -93,8 +95,7 @@ public class ReservationService {
                 log.info("error during creating reservation {}: barber has no space in schedule",
                         request
                 );
-                //TODO: кастомная ошибка составления расписания
-                throw new IllegalArgumentException();
+                throw new ReservationException("Barber has no space in schedule");
             }
 
             scheduleUnit.setStatus(false);
@@ -116,8 +117,7 @@ public class ReservationService {
                 barber.getId(), request.date(), request.time()
         ).orElseThrow(() -> {
             log.info("error during denying reservation {}: no such reservation", request);
-            //TODO: кастомная ошибка составления расписания
-            return new IllegalArgumentException();
+            return new ReservationException("No such reservation");
         });
 
         reservation.setStatus(ReservationStatus.DENIED);
@@ -126,8 +126,7 @@ public class ReservationService {
         ru.mirea.maximister.barbershopbackend.domain.Service service
                 = serviceRepository.findById(reservation.getServiceId()).orElseThrow(() -> {
             log.warn("Unexpected error during deleting reservation: no such service {}", reservation);
-            //TODO: no such service ex
-            return new RuntimeException();
+            return new ServiceNotFoundException(reservation.getServiceId().toString());
         });
 
         OffsetTime end = reservation.getTime().plus(service.getDuration());

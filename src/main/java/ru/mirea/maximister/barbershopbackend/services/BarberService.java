@@ -15,11 +15,16 @@ import ru.mirea.maximister.barbershopbackend.dto.schedule.AddVocationRequest;
 import ru.mirea.maximister.barbershopbackend.dto.schedule.DeleteScheduleRequest;
 import ru.mirea.maximister.barbershopbackend.dto.schedule.UpdateScheduleListRequest;
 import ru.mirea.maximister.barbershopbackend.dto.schedule.UpdateScheduleRequest;
+import ru.mirea.maximister.barbershopbackend.exceptions.BarberException;
+import ru.mirea.maximister.barbershopbackend.exceptions.BarbershopException;
+import ru.mirea.maximister.barbershopbackend.exceptions.UserNotFoundException;
+import ru.mirea.maximister.barbershopbackend.exceptions.UserRoleException;
 import ru.mirea.maximister.barbershopbackend.repository.ScheduleRepository;
 import ru.mirea.maximister.barbershopbackend.repository.ServiceRepository;
 import ru.mirea.maximister.barbershopbackend.repository.UserRepository;
 import ru.mirea.maximister.barbershopbackend.utils.DateUtils;
 
+import java.time.DateTimeException;
 import java.time.LocalDate;
 import java.time.OffsetTime;
 
@@ -47,9 +52,8 @@ public class BarberService {
         User barber = getBarber(request.barberEmail());
 
         if (!barber.getRoles().contains(Role.ROLE_BARBER)) {
-            //TODO: кастомная ошибка
             log.warn("User {} is not a barber", request.barberEmail());
-            throw new IllegalArgumentException();
+            throw new UserRoleException("User " + request.barberEmail() + " is not a BARBER");
         }
 
         barbershop.addBarber(barber);
@@ -65,15 +69,13 @@ public class BarberService {
         User barber = userRepository.findByEmail(email).orElseThrow(
                 () -> {
                     log.info("Error while searching barber {}", email);
-                    //TODO: кастомная ошибка
-                    return new IllegalArgumentException();
+                    return new UserNotFoundException(email);
                 }
         );
 
         if (!barber.getRoles().contains(Role.ROLE_BARBER)) {
             log.info("User {} is not a barber", email);
-            //TODO: кастомная ошибка
-            throw new IllegalArgumentException();
+            throw new UserRoleException("User " + email + " is not a BARBER");
         }
 
         return barber;
@@ -87,22 +89,19 @@ public class BarberService {
         if (barbershop == null) {
             log.info("Can not add service to barber {} because barber has no barbershop",
                     request.barberEmail());
-            //TODO: кастомная ошибка
-            throw new IllegalArgumentException();
+            throw new BarberException("Barber has no barbershop");
         }
 
         ru.mirea.maximister.barbershopbackend.domain.Service service
                 = serviceRepository.findByName(request.serviceName())
                 .orElseThrow(() -> {
                     log.info("No such service {}", request.serviceName());
-                    //TODO: custom error
-                    return new IllegalArgumentException();
+                    return new BarberException("No such service: " + request.serviceName());
                 });
 
         if (!barbershop.getServices().contains(service)) {
             log.info("No such service {} in barbershop {}", service.getName(), barbershop.getAddress());
-            //TODO: custom error
-            throw new IllegalArgumentException();
+            throw new BarbershopException("No such service in barbershop: " + request.serviceName());
         }
 
         barber.addService(service);
@@ -119,16 +118,14 @@ public class BarberService {
                 = serviceRepository.findByName(request.serviceName())
                 .orElseThrow(() -> {
                     log.info("No such service {}", request.serviceName());
-                    //TODO: custom error
-                    return new IllegalArgumentException();
+                    return new BarberException("No such service: " + request.serviceName());
                 });
 
         if (!barber.getServices().contains(service)) {
             log.info("Barber {} has no such service {}",
                     barber.getEmail(), service.getName());
 
-            //TODO: custom exception
-            throw new IllegalArgumentException();
+            throw  new BarberException("Barber has no such service: " + request.serviceName());
         }
 
         barber.deleteService(service);
@@ -209,15 +206,14 @@ public class BarberService {
     private void validateTime(OffsetTime from, OffsetTime to) {
         if (from.isBefore(to)) {
             log.info("Invalid time format: to is less than from");
-            throw new IllegalArgumentException();
+            throw new DateTimeException("Invalid time format: to is less than from");
         }
         try {
             DateUtils.validateScheduleTime(to);
             DateUtils.validateScheduleTime(from);
         } catch (IllegalArgumentException e) {
             log.info("Invalid time format: {}", e.getMessage());
-            //TODO: кастомная ошибка
-            throw new IllegalArgumentException(e);
+            throw new DateTimeException(e.getMessage());
         }
     }
 }

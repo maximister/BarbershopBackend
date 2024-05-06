@@ -44,9 +44,9 @@ public class AdminController {
 
     @PostMapping("/service")
     public ResponseEntity<?> addService(@RequestBody AddServiceRequest request) {
-        boolean res = adminService.addService(request);
+        adminService.addService(request);
         return new ResponseEntity<>(
-                res? "Successfully added new service" : "Service already exists",
+                "Successfully added new service",
                 HttpStatus.OK
         );
     }

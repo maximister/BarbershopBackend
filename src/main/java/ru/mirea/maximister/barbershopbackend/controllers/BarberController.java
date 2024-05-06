@@ -22,7 +22,7 @@ public class BarberController {
     //Добавление и удаление услуг из своего списка
     //установка графика
 
-    @PostMapping("/barbers")
+    @PostMapping
     public ResponseEntity<?> setBarbershop(@RequestBody  SetBarberBarbershopRequest request) {
         barberService.setBarbersBarbershop(request);
 
@@ -52,7 +52,7 @@ public class BarberController {
         );
     }
 
-    @PostMapping("/schedule")
+    @PostMapping("/schedule/list")
     public ResponseEntity<?> updateSchedule(@RequestBody UpdateScheduleListRequest request) {
         barberService.updateScheduleRequest(request);
         return new ResponseEntity<>(

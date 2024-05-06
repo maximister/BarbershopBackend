@@ -16,10 +16,10 @@ public class BarbershopController {
     //Доступ у админа
     @PostMapping
     public ResponseEntity<?> addBarbershop(@RequestBody AddBarbershopRequest request) {
-        boolean res = barbershopService.addBarbershop(request);
+        barbershopService.addBarbershop(request);
 
         return new ResponseEntity<>(
-                res? "barbershop was successfully added" : "Barbershop is already exists",
+                "barbershop was successfully added",
                 HttpStatus.OK
         );
     }
@@ -55,7 +55,7 @@ public class BarbershopController {
     //TODO: возможно добавить получение барбершопа
 
     //admin
-    @PostMapping
+    @PostMapping("/time")
     public ResponseEntity<?> setBarbershopWorkTime(@RequestBody SetBarbershopWorkTimeRequest request) {
         barbershopService.setBarberShopWorkTime(request);
         return new ResponseEntity<>(

@@ -12,6 +12,7 @@ import ru.mirea.maximister.barbershopbackend.dto.users.requests.DeleteUserReques
 import ru.mirea.maximister.barbershopbackend.dto.users.responses.AdminList;
 import ru.mirea.maximister.barbershopbackend.dto.users.responses.BarberList;
 import ru.mirea.maximister.barbershopbackend.dto.users.responses.ClientList;
+import ru.mirea.maximister.barbershopbackend.exceptions.UserNotFoundException;
 import ru.mirea.maximister.barbershopbackend.repository.ScheduleRepository;
 import ru.mirea.maximister.barbershopbackend.repository.UserRepository;
 
@@ -27,16 +28,13 @@ public class UserService {
 
     @Transactional
     public User findUserById(Long id) {
-        //TODO: кастомная ошибка
-        return userRepository.findById(id).orElseThrow(() -> new UsernameNotFoundException(""));
+        return userRepository.findById(id).orElseThrow(() -> new UserNotFoundException(id.toString()));
     }
 
     @Transactional
     public void deleteUser(DeleteUserRequest request)  {
-        //TODO: продумать так, чтобы удалять мог только сам пользователь или админ
         User user = userRepository.findByEmail(request.email()).orElseThrow(
-                //TODO: кастомная ошибка
-                () -> new UsernameNotFoundException("")
+                () -> new UserNotFoundException(request.email())
         );
 
         if (user.getRoles().contains(Role.ROLE_BARBER)) {

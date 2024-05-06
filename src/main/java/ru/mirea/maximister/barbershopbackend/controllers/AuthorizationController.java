@@ -22,17 +22,16 @@ public class AuthorizationController {
         boolean res = authService.signIn(request);
 
         return new ResponseEntity<>(
-                res? "User successfully signed in" : "User not exists",
+                "User successfully signed in",
                 HttpStatus.OK
         );
     }
 
     @PostMapping("/signup")
     public ResponseEntity<?> signUp(@RequestBody  SignUpRequest request) {
-        boolean res = authService.signUp(request);
-
+        authService.signUp(request);
         return new ResponseEntity<>(
-                res? "User successfully signed up" : "User is already existed",
+                "User successfully signed up",
                 HttpStatus.OK
         );
     }

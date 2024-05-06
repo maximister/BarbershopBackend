@@ -11,6 +11,9 @@ import ru.mirea.maximister.barbershopbackend.domain.enums.Role;
 import ru.mirea.maximister.barbershopbackend.dto.auth.SignInRequest;
 import ru.mirea.maximister.barbershopbackend.dto.auth.SignUpRequest;
 import ru.mirea.maximister.barbershopbackend.dto.auth.UpdatePasswordRequest;
+import ru.mirea.maximister.barbershopbackend.exceptions.PasswordMatchingException;
+import ru.mirea.maximister.barbershopbackend.exceptions.UserAlreadyExistsException;
+import ru.mirea.maximister.barbershopbackend.exceptions.UserNotFoundException;
 import ru.mirea.maximister.barbershopbackend.repository.UserRepository;
 
 @Service
@@ -36,54 +39,47 @@ public class AuthService {
 
         if (userRepository.findByEmail(user.getEmail()).isPresent()) {
             log.info("User {} is already registered", request.email());
-            return false;
-        } else {
-            userRepository.save(user);
-            log.info("User {} was signed up", request.email());
-            return true;
+            throw new UserAlreadyExistsException(request.email());
         }
+
+        userRepository.save(user);
+        log.info("User {} was signed up", request.email());
+        return true;
     }
 
     @Transactional
     public boolean signIn(SignInRequest request) {
         User user = userRepository.findByEmail(request.email()).orElseThrow(
-                () -> new UsernameNotFoundException("User with email " + request.email() + " not found")
+                () -> new UserNotFoundException(request.email())
         );
 
         if (!encoder.matches(request.password(), user.getPassword())) {
-            //TODO: добавить ошибку
-            return false;
+            log.info("Error during matching password from user {}", user.getEmail());
+            throw new PasswordMatchingException();
         }
 
         return true;
     }
 
     @Transactional
-    public boolean updatePassword(UpdatePasswordRequest request) {
+    public void updatePassword(UpdatePasswordRequest request) {
         User user = userRepository.findByEmail(request.email())
-                .orElseThrow(
-                        //TODO: кастомная ошибка
-                        () -> new UsernameNotFoundException("")
-                );
+                .orElseThrow(() -> new UserNotFoundException(request.email()));
 
         if (!encoder.matches(request.oldPassword(), user.getPassword())) {
-            //TODO: кастомная ошибка о том что пароли не сходятся
             log.info("Received invalid password during changing password for user {}",
                     request.email());
-            throw new IllegalArgumentException("");
+            throw new PasswordMatchingException();
         }
 
         if (request.oldPassword().equals(request.newPassword())) {
-            //TODO: кастомная ошибка о том что пароли однаковые
             log.info("Received equal passwords during changing password for user {}",
                     request.email());
-            throw new IllegalArgumentException("");
+            throw new PasswordMatchingException();
         }
 
         user.setPassword(request.newPassword());
         userRepository.setUserPassword(user.getId(), encoder.encode(request.newPassword()));
         log.info("Changed password for user {}", user.getEmail());
-
-        return true;
     }
 }

@@ -11,10 +11,15 @@ import ru.mirea.maximister.barbershopbackend.dto.barbershop.responses.Barbershop
 import ru.mirea.maximister.barbershopbackend.dto.barbershop.responses.BarbershopList;
 import ru.mirea.maximister.barbershopbackend.dto.mappers.BarbershopToBarbershopResponseMapper;
 import ru.mirea.maximister.barbershopbackend.dto.mappers.UserToResponsesMapper;
+import ru.mirea.maximister.barbershopbackend.exceptions.BarbershopAlreadyExistsException;
+import ru.mirea.maximister.barbershopbackend.exceptions.BarbershopException;
+import ru.mirea.maximister.barbershopbackend.exceptions.BarbershopNotFoundException;
+import ru.mirea.maximister.barbershopbackend.exceptions.ServiceNotFoundException;
 import ru.mirea.maximister.barbershopbackend.repository.BarbershopRepository;
 import ru.mirea.maximister.barbershopbackend.repository.ServiceRepository;
 import ru.mirea.maximister.barbershopbackend.repository.UserRepository;
 
+import java.time.DateTimeException;
 import java.time.OffsetTime;
 import java.time.ZoneOffset;
 import java.util.stream.Collectors;
@@ -34,7 +39,7 @@ public class BarbershopService {
             OffsetTime.of(22, 0, 0, 0, ZoneOffset.UTC);
 
     @Transactional
-    public boolean addBarbershop(AddBarbershopRequest request) {
+    public void addBarbershop(AddBarbershopRequest request) {
         Barbershop barbershop = Barbershop.builder()
                 .name(request.name())
                 .description(request.description())
@@ -47,16 +52,13 @@ public class BarbershopService {
                 .build();
 
         if (barbershopRepository.getBarbershopByCityAndStreetAndNumber(
-                barbershop.getCity(), barbershop.getStreet(), barbershop.getNumber())
+                        barbershop.getCity(), barbershop.getStreet(), barbershop.getNumber())
                 .isPresent()) {
             log.info("Barbershop with address {} is already exists", barbershop.getAddress());
-            //TODO: заменить на ошибку
-            return false;
-        } else {
-            barbershopRepository.save(barbershop);
-            log.info("Barbershop with address {} was successfully registered", barbershop.getAddress());
-            return true;
+            throw new BarbershopAlreadyExistsException(barbershop.getAddress());
         }
+        barbershopRepository.save(barbershop);
+        log.info("Barbershop with address {} was successfully registered", barbershop.getAddress());
     }
 
     @Transactional
@@ -88,7 +90,7 @@ public class BarbershopService {
                     barbershop.getName(),
                     request.name()
             );
-            throw new IllegalArgumentException();
+            throw new BarbershopException("Found invalid barbershop name during deletion");
         }
 
         barbershopRepository.deleteById(barbershop.getId());
@@ -101,8 +103,7 @@ public class BarbershopService {
         ).orElseThrow(() -> {
                     log.info("Barbershop {} was not found during removing",
                             city + " " + street + " " + number);
-                    //TODO: кастомная ошибка о ненаходе шопа
-                    return new IllegalArgumentException("");
+                    return new BarbershopNotFoundException(city + " " + street + " " + number);
                 }
         );
     }
@@ -122,28 +123,14 @@ public class BarbershopService {
         log.info("Successfully updated barbershop work time by request: {}", request);
     }
 
-    //TODO: перенести в утилс мб
     private void validateBarbershopWorkTime(OffsetTime start, OffsetTime end) {
-        if (end.isBefore(start) || end.equals(start)) {
-            //TODO: кастомная ошибка задания даты, в описании ошибки описать причину
+        if (end.isBefore(start) || end.equals(start) || end.isAfter(MAX_OPEN_TIME)
+                || start.isBefore(MIN_OPEN_TIME)) {
             log.info("Invalid barbershop work time: from {} to {}",
                     start,
                     end
             );
-        }
-        if (end.isAfter(MAX_OPEN_TIME)) {
-            //TODO: кастомная ошибка задания даты, в описании ошибки описать причину
-            log.info("Invalid barbershop work time: from {} to {}",
-                    start,
-                    end
-            );
-        }
-        if (start.isBefore(MIN_OPEN_TIME)) {
-            //TODO: кастомная ошибка задания даты, в описании ошибки описать причину
-            log.info("Invalid barbershop work time: from {} to {}",
-                    start,
-                    end
-            );
+            throw new DateTimeException("Invalid barbershop work time");
         }
     }
 
@@ -188,9 +175,8 @@ public class BarbershopService {
         ru.mirea.maximister.barbershopbackend.domain.Service service
                 = serviceRepository.findByName(request.serviceName())
                 .orElseThrow(() -> {
-                    //TODO: кастомная ошибка
                     log.info("no such service {}", request.serviceName());
-                    return new IllegalArgumentException();
+                    return new ServiceNotFoundException(request.serviceName());
                 });
 
         barbershop.addService(service);
@@ -206,13 +192,12 @@ public class BarbershopService {
                 = serviceRepository.findByName(request.serviceName())
                 .orElseThrow(() -> {
                     log.info("No such service {}", request.serviceName());
-                    //TODO: custom error
-                    return new IllegalArgumentException();
+                    return new ServiceNotFoundException(request.serviceName());
                 });
 
         barbershop.deleteService(service);
 
-        for (User barber: barbershop.getBarbers()) {
+        for (User barber : barbershop.getBarbers()) {
             barber.deleteService(service);
             userRepository.save(barber);
         }

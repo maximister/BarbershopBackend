@@ -38,9 +38,7 @@ public class ReservationController {
         );
     }
 
-    //user свое, мб сделать метод для админа с любым расписанием
-    //TODO: для админа добавить в admin controller
-    //TODO: для админа сделать контроллер с юзерами
+    //user свое
     @GetMapping
     //заменить на почте из токена
     public ResponseEntity<?> getClientsActiveReservations(@RequestBody String email) {
