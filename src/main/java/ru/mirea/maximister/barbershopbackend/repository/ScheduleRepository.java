@@ -46,6 +46,13 @@ public interface ScheduleRepository extends JpaRepository<Schedule, Long> {
             @Param("endTime") OffsetTime endTime
     );
 
+    @Modifying
+    @Query(value = "UPDATE schedule" +
+            "SET status = true, date = date + interval '28 days'" +
+            "WHERE date < current_date;",
+    nativeQuery = true)
+    void updateStatusAndDateForOldSchedules();
+
     List<Schedule> findByBarberIdAndStatus(Long id, boolean status);
 
     void deleteAllByBarberId(Long id);

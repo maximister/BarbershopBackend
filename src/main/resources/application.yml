@@ -1,12 +1,23 @@
+app:
+  scheduler:
+    enable: false
+    worker-schedule-updater:
+      enable: false
+      interval: 15s
+    mail-sender:
+      enable: false
+      interval: 15s
+
+
 spring:
-    datasource:
-        url: jdbc:postgresql://localhost:5437/barbershop
-        username: postgres
-        password: postgres
-        driverClassName: org.postgresql.Driver
-    jpa:
-        database-platform: org.hibernate.dialect.PostgreSQLDialect
-        hibernate:
-            ddl-auto: update
-        open-in-view: false
-        show-sql: true
+  datasource:
+    url: jdbc:postgresql://localhost:5437/barbershop
+    username: postgres
+    password: postgres
+    driverClassName: org.postgresql.Driver
+  jpa:
+    database-platform: org.hibernate.dialect.PostgreSQLDialect
+    hibernate:
+      ddl-auto: update
+    open-in-view: false
+    show-sql: true
