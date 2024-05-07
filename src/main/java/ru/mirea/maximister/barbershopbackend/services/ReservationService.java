@@ -25,6 +25,7 @@ import ru.mirea.maximister.barbershopbackend.repository.ReservationRepository;
 import ru.mirea.maximister.barbershopbackend.repository.ScheduleRepository;
 import ru.mirea.maximister.barbershopbackend.repository.ServiceRepository;
 import ru.mirea.maximister.barbershopbackend.repository.UserRepository;
+import ru.mirea.maximister.barbershopbackend.services.security.JwtService;
 
 import java.time.OffsetTime;
 import java.util.List;
@@ -44,6 +45,7 @@ public class ReservationService {
     private final UserToResponsesMapper userMapper;
     private final ServiceToServiceResponseMapper serviceMapper;
     private final BarbershopToBarbershopResponseMapper barbershopMapper;
+    private final JwtService jwtService;
 
 
     /**
@@ -58,9 +60,10 @@ public class ReservationService {
 
     //TODO: продумать как закрывать записи
     @Transactional
-    public void AddReservation(AddReservationRequest request) {
+    public void AddReservation(String token, AddReservationRequest request) {
+        String email = jwtService.extractUserName(token);
         User barber = barberService.getBarber(request.barberEmail());
-        User client = userRepository.findByEmail(request.clientEmail()).orElse(null);
+        User client = userRepository.findByEmail(email).orElse(null);
         ru.mirea.maximister.barbershopbackend.domain.Service service
                 = serviceRepository.findByName(request.serviceName()).orElseThrow(
                 IllegalArgumentException::new
@@ -111,7 +114,7 @@ public class ReservationService {
     }
 
     @Transactional
-    public void denyReservation(DenyReservationRequest request) {
+    public void denyReservation(String token, DenyReservationRequest request) {
         User barber = barberService.getBarber(request.barberEmail());
         Reservation reservation = reservationRepository.findByBarberIdAndDateAndTime(
                 barber.getId(), request.date(), request.time()
@@ -138,13 +141,14 @@ public class ReservationService {
     }
 
     @Transactional
-    public ClientReservationList getClientsActiveReservations(String clientEmail) {
-        User client = userRepository.findByEmail(clientEmail).orElse(null);
+    public ClientReservationList getClientsActiveReservations(String token) {
+        String email = jwtService.extractUserName(token);
+        User client = userRepository.findByEmail(email).orElse(null);
         List<Reservation> reservations = reservationRepository.findByClientIdAndStatus(
                 client.getId(), ReservationStatus.ACTIVE
         );
 
-        log.info("Created list of clients {} reservations", clientEmail);
+        log.info("Created list of clients {} reservations", email);
         return new ClientReservationList(
                 userMapper.userToClientResponse(client),
                 reservations.stream()
@@ -158,13 +162,14 @@ public class ReservationService {
     }
 
     @Transactional
-    public BarberReservationsList getBarbersReservations(String barberEmail) {
-        User barber = barberService.getBarber(barberEmail);
+    public BarberReservationsList getBarbersReservations(String token) {
+        String email = jwtService.extractUserName(token);
+        User barber = barberService.getBarber(email);
         List<Reservation> reservations = reservationRepository.findByBarberIdAndStatus(
                 barber.getId(), ReservationStatus.ACTIVE
         );
 
-        log.info("Created list of barbers {} reservations", barberEmail);
+        log.info("Created list of barbers {} reservations", email);
         return new BarberReservationsList(
                 userMapper.userToBarberResponse(barber),
                 reservations.stream()

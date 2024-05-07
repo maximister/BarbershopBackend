@@ -18,13 +18,14 @@ import ru.mirea.maximister.barbershopbackend.services.BarberService;
 @AllArgsConstructor
 public class BarberController {
     private final BarberService barberService;
+    private static final String TOKEN = "Token";
     //Привязка к барбершопу
     //Добавление и удаление услуг из своего списка
     //установка графика
 
     @PostMapping
-    public ResponseEntity<?> setBarbershop(@RequestBody  SetBarberBarbershopRequest request) {
-        barberService.setBarbersBarbershop(request);
+    public ResponseEntity<?> setBarbershop(@RequestHeader(TOKEN) String token, @RequestBody  SetBarberBarbershopRequest request) {
+        barberService.setBarbersBarbershop(token, request);
 
         return new ResponseEntity<>(
                 "Successfully added barber to barbershop",
@@ -33,8 +34,8 @@ public class BarberController {
     }
 
     @PostMapping("/service")
-    public ResponseEntity<?> addService(@RequestBody AddServiceToBarberRequest request) {
-        barberService.addServiceToBarber(request);
+    public ResponseEntity<?> addService(@RequestHeader(TOKEN) String token, @RequestBody AddServiceToBarberRequest request) {
+        barberService.addServiceToBarber(token, request);
 
         return new ResponseEntity<>(
                 "Successfully added service to barber",
@@ -43,8 +44,8 @@ public class BarberController {
     }
 
     @DeleteMapping("/service")
-    public ResponseEntity<?> deleteService(@RequestBody DeleteBarbersServiceRequest request) {
-        barberService.deleteBarbersService(request);
+    public ResponseEntity<?> deleteService(@RequestHeader(TOKEN) String token, @RequestBody DeleteBarbersServiceRequest request) {
+        barberService.deleteBarbersService(token, request);
 
         return new ResponseEntity<>(
                 "Successfully deleted service to barber",
@@ -53,8 +54,8 @@ public class BarberController {
     }
 
     @PostMapping("/schedule/list")
-    public ResponseEntity<?> updateSchedule(@RequestBody UpdateScheduleListRequest request) {
-        barberService.updateScheduleRequest(request);
+    public ResponseEntity<?> updateSchedule(@RequestHeader(TOKEN) String token, @RequestBody UpdateScheduleListRequest request) {
+        barberService.updateScheduleRequest(token, request);
         return new ResponseEntity<>(
                 "Successfully updated schedule for barber",
                 HttpStatus.OK
@@ -62,8 +63,8 @@ public class BarberController {
     }
 
     @PostMapping("/schedule")
-    public ResponseEntity<?> updateSchedule(@RequestBody UpdateScheduleRequest request) {
-        barberService.updateScheduleRequest(request);
+    public ResponseEntity<?> updateSchedule(@RequestHeader(TOKEN) String token, @RequestBody UpdateScheduleRequest request) {
+        barberService.updateScheduleRequest(token, request);
         return new ResponseEntity<>(
                 "Successfully updated schedule for barber",
                 HttpStatus.OK
@@ -71,8 +72,8 @@ public class BarberController {
     }
 
     @DeleteMapping("/schedule")
-    public ResponseEntity<?> deleteSchedule(@RequestBody DeleteScheduleRequest request) {
-        barberService.deleteSchedule(request);
+    public ResponseEntity<?> deleteSchedule(@RequestHeader(TOKEN) String token, @RequestBody DeleteScheduleRequest request) {
+        barberService.deleteSchedule(token, request);
         return new ResponseEntity<>(
                 "Successfully deleted schedule for barber",
                 HttpStatus.OK
@@ -80,8 +81,8 @@ public class BarberController {
     }
 
     @PostMapping("/schedule/vocation")
-    public ResponseEntity<?> addVocation(@RequestBody AddVocationRequest request) {
-        barberService.addVocation(request);
+    public ResponseEntity<?> addVocation(@RequestHeader(TOKEN) String token, @RequestBody AddVocationRequest request) {
+        barberService.addVocation(token,request);
         return new ResponseEntity<>(
                 "Successfully added vocation for barber",
                 HttpStatus.OK

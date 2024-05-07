@@ -22,6 +22,7 @@ import ru.mirea.maximister.barbershopbackend.exceptions.UserRoleException;
 import ru.mirea.maximister.barbershopbackend.repository.ScheduleRepository;
 import ru.mirea.maximister.barbershopbackend.repository.ServiceRepository;
 import ru.mirea.maximister.barbershopbackend.repository.UserRepository;
+import ru.mirea.maximister.barbershopbackend.services.security.JwtService;
 import ru.mirea.maximister.barbershopbackend.utils.DateUtils;
 
 import java.time.DateTimeException;
@@ -36,6 +37,7 @@ public class BarberService {
     private final ServiceRepository serviceRepository;
     private final BarbershopService barbershopService;
     private final ScheduleRepository scheduleRepository;
+    private final JwtService jwtService;
 
     /**
      * приписка и смена точки
@@ -44,16 +46,17 @@ public class BarberService {
      */
 
     @Transactional
-    public void setBarbersBarbershop(SetBarberBarbershopRequest request) {
+    public void setBarbersBarbershop(String token, SetBarberBarbershopRequest request) {
         Barbershop barbershop = barbershopService.getBarbershopByAddress(
                 request.city(), request.street(), request.number()
         );
 
-        User barber = getBarber(request.barberEmail());
+        String email = jwtService.extractUserName(token);
+        User barber = getBarber(email);
 
         if (!barber.getRoles().contains(Role.ROLE_BARBER)) {
-            log.warn("User {} is not a barber", request.barberEmail());
-            throw new UserRoleException("User " + request.barberEmail() + " is not a BARBER");
+            log.warn("User {} is not a barber", email);
+            throw new UserRoleException("User " + email + " is not a BARBER");
         }
 
         barbershop.addBarber(barber);
@@ -82,13 +85,13 @@ public class BarberService {
     }
 
     @Transactional
-    public void addServiceToBarber(AddServiceToBarberRequest request) {
-        User barber = getBarber(request.barberEmail());
+    public void addServiceToBarber(String token, AddServiceToBarberRequest request) {
+        String email = jwtService.extractUserName(token);
+        User barber = getBarber(email);
         Barbershop barbershop = barber.getBarbershop();
 
         if (barbershop == null) {
-            log.info("Can not add service to barber {} because barber has no barbershop",
-                    request.barberEmail());
+            log.info("Can not add service to barber {} because barber has no barbershop", email);
             throw new BarberException("Barber has no barbershop");
         }
 
@@ -112,8 +115,9 @@ public class BarberService {
     }
 
     @Transactional
-    public void deleteBarbersService(DeleteBarbersServiceRequest request) {
-        User barber = getBarber(request.barberEmail());
+    public void deleteBarbersService(String token, DeleteBarbersServiceRequest request) {
+        String email = jwtService.extractUserName(token);
+        User barber = getBarber(email);
         ru.mirea.maximister.barbershopbackend.domain.Service service
                 = serviceRepository.findByName(request.serviceName())
                 .orElseThrow(() -> {
@@ -136,16 +140,17 @@ public class BarberService {
     }
 
     @Transactional
-    public void updateScheduleRequest(UpdateScheduleListRequest requests) {
-        for (var request : requests.requests()) updateScheduleRequest(request);
+    public void updateScheduleRequest(String token, UpdateScheduleListRequest requests) {
+        for (var request : requests.requests()) updateScheduleRequest(token, request);
     }
 
     @Transactional
-    public void updateScheduleRequest(UpdateScheduleRequest request) {
+    public void updateScheduleRequest(String token, UpdateScheduleRequest request) {
+        String email = jwtService.extractUserName(token);
         validateTime(request.from(), request.to());
 
         LocalDate curDate = DateUtils.getClosestDateByDayOfWeek(request.dayOfWeek());
-        User barber = getBarber(request.email());
+        User barber = getBarber(email);
 
         //Добавляем расписание на 4 недели вперед
         for (int i = 0; i < 4; i++) {
@@ -168,11 +173,12 @@ public class BarberService {
     }
 
     @Transactional
-    public void deleteSchedule(DeleteScheduleRequest request) {
+    public void deleteSchedule(String token, DeleteScheduleRequest request) {
+        String email = jwtService.extractUserName(token);
         validateTime(request.from(), request.to());
 
         LocalDate curDate = DateUtils.getClosestDateByDayOfWeek(request.dayOfWeek());
-        User barber = getBarber(request.email());
+        User barber = getBarber(email);
 
         for (int i = 0; i < 4; i++) {
             scheduleRepository.deleteByBarberIdAndDateAndTimeGreaterThanEqualAndTimeLessThanEqualOrderByTime(
@@ -184,11 +190,12 @@ public class BarberService {
     }
 
     @Transactional
-    public void addVocation(AddVocationRequest request) {
+    public void addVocation(String token, AddVocationRequest request) {
+        String email = jwtService.extractUserName(token);
         validateTime(request.from(), request.to());
 
         LocalDate curDate = DateUtils.getClosestDateByDayOfWeek(request.dayOfWeek());
-        User barber = getBarber(request.email());
+        User barber = getBarber(email);
 
         for (int i = 0; i < 4; i++) {
             scheduleRepository.updateStatusByBarberIdAndDateAndTimeRange(

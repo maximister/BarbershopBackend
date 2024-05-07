@@ -15,8 +15,6 @@ public record AddReservationRequest(
         @NotBlank
         String serviceName,
         @Email
-        String barberEmail,
-        @Email
-        String clientEmail
+        String barberEmail
 ) {
 }

@@ -19,19 +19,18 @@ public class AuthorizationController {
     private final AuthService authService;
     @PostMapping("/signin")
     public ResponseEntity<?> signIn(@RequestBody  SignInRequest request) {
-        boolean res = authService.signIn(request);
+
 
         return new ResponseEntity<>(
-                "User successfully signed in",
+                authService.signIn(request),
                 HttpStatus.OK
         );
     }
 
     @PostMapping("/signup")
     public ResponseEntity<?> signUp(@RequestBody  SignUpRequest request) {
-        authService.signUp(request);
         return new ResponseEntity<>(
-                "User successfully signed up",
+                authService.signUp(request),
                 HttpStatus.OK
         );
     }

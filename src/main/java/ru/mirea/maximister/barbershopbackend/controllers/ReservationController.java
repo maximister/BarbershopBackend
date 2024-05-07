@@ -13,51 +13,47 @@ import ru.mirea.maximister.barbershopbackend.services.ReservationService;
 @RequestMapping("/reservations")
 @AllArgsConstructor
 public class ReservationController {
-    //работа с записями
-    //мб сделать еще один для админских задач
-
     private final ReservationService reservationService;
+    private static final String TOKEN = "Token";
 
-    //для всех зареганных
     @PostMapping
-    public ResponseEntity<?> addReservation(@RequestBody AddReservationRequest request) {
-        reservationService.AddReservation(request);
+    public ResponseEntity<?> addReservation(
+            @RequestHeader(TOKEN) String token,
+            @RequestBody AddReservationRequest request) {
+        reservationService.AddReservation(token, request);
         return new ResponseEntity<>(
                 "Reservation was successfully added",
                 HttpStatus.OK
         );
     }
 
-    //user
     @DeleteMapping
-    public ResponseEntity<?> denyReservation(@RequestBody DenyReservationRequest request) {
-        reservationService.denyReservation(request);
+    public ResponseEntity<?> denyReservation(
+            @RequestHeader(TOKEN) String token,
+            @RequestBody DenyReservationRequest request) {
+        reservationService.denyReservation(token, request);
         return new ResponseEntity<>(
                 "Reservation was successfully denied",
                 HttpStatus.OK
         );
     }
 
-    //user свое
     @GetMapping
-    //заменить на почте из токена
-    public ResponseEntity<?> getClientsActiveReservations(@RequestBody String email) {
+    public ResponseEntity<?> getClientsActiveReservations(@RequestHeader(TOKEN) String token) {
         return new ResponseEntity<>(
-                reservationService.getClientsActiveReservations(email),
+                reservationService.getClientsActiveReservations(token),
                 HttpStatus.OK
         );
     }
 
-    //барбер и админ
     @GetMapping("/barber")
-    public ResponseEntity<?> getBarbersReservations(@RequestBody String email) {
+    public ResponseEntity<?> getBarbersReservations(@RequestHeader(TOKEN) String token) {
         return new ResponseEntity<>(
-                reservationService.getBarbersReservations(email),
+                reservationService.getBarbersReservations(token),
                 HttpStatus.OK
         );
     }
 
-    //все
     @GetMapping("/slots/barber")
     public ResponseEntity<?> getBarbersSlots(@RequestBody String email) {
         return new ResponseEntity<>(
@@ -66,7 +62,6 @@ public class ReservationController {
         );
     }
 
-    //все
     @GetMapping("/slots/barbershop")
     public ResponseEntity<?> getAllSlotsInBarbershop(@RequestBody GetSlotsInBarbershopRequest request) {
         return new ResponseEntity<>(

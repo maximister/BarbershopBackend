@@ -14,8 +14,6 @@ public record UpdateScheduleRequest(
         @NotNull
         OffsetTime from,
         @NotNull
-        OffsetTime to,
-        @Email
-        String email
+        OffsetTime to
 ) {
 }

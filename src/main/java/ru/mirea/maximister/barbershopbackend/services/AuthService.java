@@ -2,12 +2,15 @@ package ru.mirea.maximister.barbershopbackend.services;
 
 import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.security.authentication.AuthenticationManager;
+import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import ru.mirea.maximister.barbershopbackend.domain.User;
 import ru.mirea.maximister.barbershopbackend.domain.enums.Role;
+import ru.mirea.maximister.barbershopbackend.dto.JwtAuthenticationResponse;
 import ru.mirea.maximister.barbershopbackend.dto.auth.SignInRequest;
 import ru.mirea.maximister.barbershopbackend.dto.auth.SignUpRequest;
 import ru.mirea.maximister.barbershopbackend.dto.auth.UpdatePasswordRequest;
@@ -15,6 +18,7 @@ import ru.mirea.maximister.barbershopbackend.exceptions.PasswordMatchingExceptio
 import ru.mirea.maximister.barbershopbackend.exceptions.UserAlreadyExistsException;
 import ru.mirea.maximister.barbershopbackend.exceptions.UserNotFoundException;
 import ru.mirea.maximister.barbershopbackend.repository.UserRepository;
+import ru.mirea.maximister.barbershopbackend.services.security.JwtService;
 
 @Service
 @AllArgsConstructor
@@ -22,11 +26,11 @@ import ru.mirea.maximister.barbershopbackend.repository.UserRepository;
 public class AuthService {
     private final UserRepository userRepository;
     private final PasswordEncoder encoder;
-
-    //TODO: Добавить Jwt!!!
+    private final JwtService jwtService;
+    private final AuthenticationManager authenticationManager;
 
     @Transactional
-    public boolean signUp(SignUpRequest request) {
+    public JwtAuthenticationResponse signUp(SignUpRequest request) {
         User user = User.builder()
                 .email(request.email())
                 .password(encoder.encode(request.password()))
@@ -44,21 +48,28 @@ public class AuthService {
 
         userRepository.save(user);
         log.info("User {} was signed up", request.email());
-        return true;
+
+        var jwt = jwtService.generateToken(user);
+        return new JwtAuthenticationResponse(jwt);
     }
 
     @Transactional
-    public boolean signIn(SignInRequest request) {
+    public JwtAuthenticationResponse  signIn(SignInRequest request) {
+        authenticationManager.authenticate(
+                new UsernamePasswordAuthenticationToken(request.email(), request.password()));
+
         User user = userRepository.findByEmail(request.email()).orElseThrow(
                 () -> new UserNotFoundException(request.email())
         );
 
-        if (!encoder.matches(request.password(), user.getPassword())) {
-            log.info("Error during matching password from user {}", user.getEmail());
-            throw new PasswordMatchingException();
-        }
+        //TODO: delete
+//        if (!encoder.matches(request.password(), user.getPassword())) {
+//            log.info("Error during matching password from user {}", user.getEmail());
+//            throw new PasswordMatchingException();
+//        }
 
-        return true;
+        var jwt = jwtService.generateToken(user);
+        return new JwtAuthenticationResponse(jwt);
     }
 
     @Transactional

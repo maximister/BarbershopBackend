@@ -12,8 +12,6 @@ public record DeleteScheduleRequest(
         @Max(7)
         Integer dayOfWeek,
         OffsetTime from,
-        OffsetTime to,
-        @Email
-        String email
+        OffsetTime to
 ) {
 }

@@ -5,8 +5,6 @@ import jakarta.validation.constraints.NotNull;
 
 public record AddServiceToBarberRequest(
         @NotNull
-        String serviceName,
-        @Email
-        String barberEmail
+        String serviceName
 ) {
 }

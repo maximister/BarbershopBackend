@@ -11,7 +11,6 @@ import ru.mirea.maximister.barbershopbackend.services.UserService;
 @RequestMapping("/admin/users")
 @AllArgsConstructor
 public class UserController {
-    //дела админские с пользователями
     private final UserService userService;
 
     @GetMapping("/{id}")

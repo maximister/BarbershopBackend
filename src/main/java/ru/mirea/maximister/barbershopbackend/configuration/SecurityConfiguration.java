@@ -1,9 +1,13 @@
 package ru.mirea.maximister.barbershopbackend.configuration;
 
+import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.http.HttpMethod;
+import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.AuthenticationProvider;
 import org.springframework.security.authentication.dao.DaoAuthenticationProvider;
+import org.springframework.security.config.annotation.authentication.configuration.AuthenticationConfiguration;
 import org.springframework.security.config.annotation.method.configuration.EnableMethodSecurity;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
@@ -14,6 +18,8 @@ import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
+import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
+import ru.mirea.maximister.barbershopbackend.filters.JwtAuthenticationFilter;
 import ru.mirea.maximister.barbershopbackend.services.security.DefaultUserDetailsService;
 
 import static org.springframework.security.config.Customizer.withDefaults;
@@ -21,7 +27,10 @@ import static org.springframework.security.config.Customizer.withDefaults;
 @EnableWebSecurity
 @EnableMethodSecurity
 @Configuration
+@RequiredArgsConstructor
 public class SecurityConfiguration {
+    private final JwtAuthenticationFilter jwtAuthenticationFilter;
+
     @Bean
     public UserDetailsService userDetailsService() {
         return new DefaultUserDetailsService();
@@ -29,34 +38,26 @@ public class SecurityConfiguration {
 
     @Bean
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
-//        return http.httpBasic(withDefaults())
-//                .csrf(AbstractHttpConfigurer::disable)
-//                .cors(AbstractHttpConfigurer::disable)
-//                .authorizeHttpRequests(request -> request
-//                        .requestMatchers("/auth/*").permitAll()
-//                        .requestMatchers("/home").permitAll()
-//                        .anyRequest().authenticated()
-//                )
-//                .formLogin(AbstractAuthenticationFilterConfigurer::permitAll)
-//                .sessionManagement(session -> session
-//                        .sessionCreationPolicy(SessionCreationPolicy.ALWAYS))
-//                .logout(logout -> logout.deleteCookies("SESSION")
-//                        .logoutUrl("/logout").logoutSuccessUrl("/?logout")
-//                        .invalidateHttpSession(true))
-//                .build();
-        return http.httpBasic(withDefaults())
+        http
                 .csrf(AbstractHttpConfigurer::disable)
-                .cors(AbstractHttpConfigurer::disable)
-                .authorizeHttpRequests(request -> request
-                        .anyRequest().permitAll()
-                )
-                .formLogin(AbstractAuthenticationFilterConfigurer::permitAll)
                 .sessionManagement(session -> session
-                        .sessionCreationPolicy(SessionCreationPolicy.ALWAYS))
-                .logout(logout -> logout.deleteCookies("SESSION")
-                        .logoutUrl("/logout").logoutSuccessUrl("/?logout")
-                        .invalidateHttpSession(true))
-                .build();
+                        .sessionCreationPolicy(SessionCreationPolicy.STATELESS)
+                )
+                .authorizeHttpRequests(authorize -> authorize
+                        .requestMatchers(HttpMethod.POST, "/auth/*").permitAll()
+                        .requestMatchers(HttpMethod.GET, "/", "/barbershops**").permitAll()
+                        .requestMatchers("/barbershops**", "/admin**", "/admin/users**").hasRole("ADMIN")
+                        .requestMatchers("/reservations/barber").hasAnyRole("ADMIN", "BARBER")
+                        .requestMatchers("/reservations**").permitAll()
+                        .requestMatchers("/barbers**").hasRole("BARBER")
+                        .anyRequest().hasRole("USER")
+                )
+                .authenticationProvider(authenticationProvider()).addFilterBefore(
+                        jwtAuthenticationFilter,
+                        UsernamePasswordAuthenticationFilter.class
+                );
+
+        return http.build();
     }
 
     @Bean
@@ -68,6 +69,10 @@ public class SecurityConfiguration {
         return provider;
     }
 
+    @Bean
+    public AuthenticationManager authenticationManager(AuthenticationConfiguration config) throws Exception {
+        return config.getAuthenticationManager();
+    }
 
     @Bean
     public PasswordEncoder passwordEncoder() {

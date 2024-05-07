@@ -14,8 +14,6 @@ public record AddVocationRequest(
         @NotNull
         OffsetTime from,
         @NotNull
-        OffsetTime to,
-        @Email
-        String email
+        OffsetTime to
 ) {
 }

@@ -12,8 +12,6 @@ public record DenyReservationRequest(
         @NotNull
         OffsetTime time,
         @Email
-        String barberEmail,
-        @Email
-        String clientEmail
+        String barberEmail
 ) {
 }

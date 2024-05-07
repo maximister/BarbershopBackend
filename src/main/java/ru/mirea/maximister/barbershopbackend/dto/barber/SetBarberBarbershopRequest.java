@@ -11,8 +11,6 @@ public record SetBarberBarbershopRequest(
         @NotBlank
         String street,
         @NotBlank
-        String number,
-        @Email
-        String barberEmail
+        String number
 ) {
 }
