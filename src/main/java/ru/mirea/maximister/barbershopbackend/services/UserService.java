@@ -2,16 +2,13 @@ package ru.mirea.maximister.barbershopbackend.services;
 
 import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import ru.mirea.maximister.barbershopbackend.domain.User;
 import ru.mirea.maximister.barbershopbackend.domain.enums.Role;
-import ru.mirea.maximister.barbershopbackend.dto.mappers.UserToResponsesMapper;
+import ru.mirea.maximister.barbershopbackend.dto.mappers.UserToDtoMapper;
 import ru.mirea.maximister.barbershopbackend.dto.users.requests.DeleteUserRequest;
-import ru.mirea.maximister.barbershopbackend.dto.users.responses.AdminList;
-import ru.mirea.maximister.barbershopbackend.dto.users.responses.BarberList;
-import ru.mirea.maximister.barbershopbackend.dto.users.responses.ClientList;
+import ru.mirea.maximister.barbershopbackend.dto.users.responses.UserList;
 import ru.mirea.maximister.barbershopbackend.exceptions.UserNotFoundException;
 import ru.mirea.maximister.barbershopbackend.repository.ScheduleRepository;
 import ru.mirea.maximister.barbershopbackend.repository.UserRepository;
@@ -23,7 +20,7 @@ import java.util.stream.Collectors;
 @Slf4j
 public class UserService {
     private final UserRepository userRepository;
-    private final UserToResponsesMapper userToBarberResponseMapper;
+    private final UserToDtoMapper userMapper;
     private final ScheduleRepository scheduleRepository;
 
     @Transactional
@@ -47,55 +44,55 @@ public class UserService {
     }
 
     @Transactional
-    public BarberList getAllBarbers() {
-        return new BarberList(userRepository.findAllByRolesContains(Role.ROLE_BARBER).stream()
-                .map(userToBarberResponseMapper::userToBarberResponse)
+    public UserList getAllBarbers() {
+        return new UserList(userRepository.findAllByRolesContains(Role.ROLE_BARBER).stream()
+                .map(userMapper::userToUSerDto)
                 .collect(Collectors.toList()));
     }
 
     @Transactional
-    public ClientList getAllClients() {
-        return new ClientList(userRepository.findAllByRolesContains(Role.ROLE_USER).stream()
-                .map(userToBarberResponseMapper::userToClientResponse)
+    public UserList getAllClients() {
+        return new UserList(userRepository.findAllByRolesContains(Role.ROLE_USER).stream()
+                .map(userMapper::userToUSerDto)
                 .collect(Collectors.toList()));
     }
 
     @Transactional
-    public AdminList getAllAdmins() {
-        return new AdminList(userRepository.findAllByRolesContains(Role.ROLE_ADMIN).stream()
-                .map(userToBarberResponseMapper::userToAdminResponse)
+    public UserList getAllAdmins() {
+        return new UserList(userRepository.findAllByRolesContains(Role.ROLE_ADMIN).stream()
+                .map(userMapper::userToUSerDto)
                 .collect(Collectors.toList()));
     }
 
     @Transactional
-    public BarberList getAllActiveBarbers() {
-        return new BarberList(userRepository.findAllByActiveAndRolesContains(true, Role.ROLE_BARBER)
+    public UserList getAllActiveBarbers() {
+        return new UserList(userRepository.findAllByActiveAndRolesContains(true, Role.ROLE_BARBER)
                 .stream()
-                .map(userToBarberResponseMapper::userToBarberResponse)
+                .map(userMapper::userToUSerDto)
                 .collect(Collectors.toList()));
     }
 
     @Transactional
-    public ClientList getAllActiveClients() {
-        return new ClientList(userRepository.findAllByActiveAndRolesContains(true, Role.ROLE_USER)
+    public UserList getAllActiveClients() {
+        return new UserList(userRepository.findAllByActiveAndRolesContains(true, Role.ROLE_USER)
                 .stream()
-                .map(userToBarberResponseMapper::userToClientResponse)
+                .map(userMapper::userToUSerDto)
                 .collect(Collectors.toList()));
     }
 
     @Transactional
-    public BarberList getAllNonActiveBarbers() {
-        return new BarberList(userRepository.findAllByActiveAndRolesContains(false, Role.ROLE_BARBER)
+    public UserList getAllNonActiveBarbers() {
+        return new UserList(userRepository.findAllByActiveAndRolesContains(false, Role.ROLE_BARBER)
                 .stream()
-                .map(userToBarberResponseMapper::userToBarberResponse)
+                .map(userMapper::userToUSerDto)
                 .collect(Collectors.toList()));
     }
 
     @Transactional
-    public ClientList getAllANonActiveClients() {
-        return new ClientList(userRepository.findAllByActiveAndRolesContains(false, Role.ROLE_USER)
+    public UserList getAllANonActiveClients() {
+        return new UserList(userRepository.findAllByActiveAndRolesContains(false, Role.ROLE_USER)
                 .stream()
-                .map(userToBarberResponseMapper::userToClientResponse)
+                .map(userMapper::userToUSerDto)
                 .collect(Collectors.toList()));
     }
 }

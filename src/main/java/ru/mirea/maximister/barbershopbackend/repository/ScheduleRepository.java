@@ -25,7 +25,7 @@ public interface ScheduleRepository extends JpaRepository<Schedule, Long> {
             Long barberId, LocalDate date, OffsetTime time
     );
 
-    List<Schedule> findByBarberIdAndDateAndTimeGreaterThanEqualAndTimeLessThanEqualOrderByTime(
+    List<Schedule> findByBarberIdAndDateAndTimeGreaterThanEqualAndTimeLessThanEqual(
             Long barberId, LocalDate date, OffsetTime start, OffsetTime end
     );
     List<Schedule> findByBarberIdAndStatusAndDateAndTimeGreaterThanEqualAndTimeLessThanEqualOrderByTime(
@@ -35,7 +35,6 @@ public interface ScheduleRepository extends JpaRepository<Schedule, Long> {
     void deleteByBarberIdAndDateAndTimeGreaterThanEqualAndTimeLessThanEqualOrderByTime(
             Long barberId, LocalDate date, OffsetTime start, OffsetTime end
     );
-
     @Modifying
     @Transactional
     @Query("UPDATE Schedule s SET s.status = :status WHERE s.barberId = :barberId " +
@@ -53,7 +52,7 @@ public interface ScheduleRepository extends JpaRepository<Schedule, Long> {
     nativeQuery = true)
     void updateStatusAndDateForOldSchedules();
 
-    List<Schedule> findByBarberIdAndStatus(Long id, boolean status);
+    List<Schedule> findByBarberIdAndStatusOrderByDateAscTimeAsc(Long id, boolean status);
 
     void deleteAllByBarberId(Long id);
 }

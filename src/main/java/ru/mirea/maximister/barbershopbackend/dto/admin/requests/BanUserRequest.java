@@ -4,7 +4,7 @@ import jakarta.validation.constraints.Email;
 
 public record BanUserRequest(
         @Email
-        String userEmail,
+        String email,
         String reason
 ) {
 }

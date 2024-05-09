@@ -7,6 +7,7 @@ public record RevokeRoleRequest(
         @Email
         String email,
         @NotBlank
-        String Role //TODO: добавить аннотацию для валидации ролей
+        ru.mirea.maximister.barbershopbackend.domain.enums.Role role
+        //TODO: добавить аннотацию для валидации ролей
 ) {
 }

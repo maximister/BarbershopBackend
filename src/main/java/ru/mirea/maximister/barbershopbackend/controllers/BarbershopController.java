@@ -15,7 +15,7 @@ public class BarbershopController {
 
     //Доступ у админа
     @PostMapping
-    public ResponseEntity<?> addBarbershop(@RequestBody AddBarbershopRequest request) {
+    public ResponseEntity<?> addBarbershop(@RequestBody AddBarbershopRequest request) { //+
         barbershopService.addBarbershop(request);
 
         return new ResponseEntity<>(
@@ -26,7 +26,7 @@ public class BarbershopController {
 
     //юзеры
     @GetMapping
-    public ResponseEntity<?> getAllBarbershops() {
+    public ResponseEntity<?> getAllBarbershops() { //+
         return new ResponseEntity<>(
                 barbershopService.getAllBarberShops(),
                 HttpStatus.OK
@@ -35,7 +35,7 @@ public class BarbershopController {
 
     //юзеры
     @GetMapping("/{city}")
-    public ResponseEntity<?> getAllBarbershopsByCity(@PathVariable String city) {
+    public ResponseEntity<?> getAllBarbershopsByCity(@PathVariable String city) { //+
         return new ResponseEntity<>(
                 barbershopService.getAllBarbershopsByCity(city),
                 HttpStatus.OK
@@ -44,7 +44,7 @@ public class BarbershopController {
 
     //админ
     @DeleteMapping
-    public ResponseEntity<?> deleteBarbershop(@RequestBody DeleteBarbershopRequest request) {
+    public ResponseEntity<?> deleteBarbershop(@RequestBody DeleteBarbershopRequest request) { //+
         barbershopService.deleteBarbershop(request);
         return new ResponseEntity<>(
                 "barbershop was successfully removed",
@@ -56,7 +56,7 @@ public class BarbershopController {
 
     //admin
     @PostMapping("/time")
-    public ResponseEntity<?> setBarbershopWorkTime(@RequestBody SetBarbershopWorkTimeRequest request) {
+    public ResponseEntity<?> setBarbershopWorkTime(@RequestBody SetBarbershopWorkTimeRequest request) {//+
         barbershopService.setBarberShopWorkTime(request);
         return new ResponseEntity<>(
                 "barbershop work time was successfully changed",
@@ -82,19 +82,19 @@ public class BarbershopController {
     }
 
     @PostMapping("/service")
-    public ResponseEntity<?> addService(@RequestBody AddServiceToBarbershopRequest request) {
+    public ResponseEntity<?> addService(@RequestBody AddServiceToBarbershopRequest request) { //+
         barbershopService.addServiceToBarbershop(request);
         return new ResponseEntity<>(
-                "New service was successfully added to barbershop",
+                "New service " + request.serviceName() + " was successfully added to barbershop",
                 HttpStatus.OK
         );
     }
 
     @DeleteMapping("/service")
-    public ResponseEntity<?> deleteService(@RequestBody DeleteBarbershopServiceRequest request) {
+    public ResponseEntity<?> deleteService(@RequestBody DeleteBarbershopServiceRequest request) { //+
         barbershopService.deleteBarbershopService(request);
         return new ResponseEntity<>(
-                "New service was successfully removing from barbershop",
+                "Service " + request.serviceName() + " was successfully removed from barbershop",
                 HttpStatus.OK
         );
     }

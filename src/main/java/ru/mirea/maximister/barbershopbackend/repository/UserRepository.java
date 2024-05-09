@@ -15,6 +15,7 @@ public interface UserRepository extends JpaRepository<User, Long> {
     Optional<User> findByFullname(String name);
 
     @Query("update User u set u.active = :isActive WHERE u.id = :userId")
+    @Modifying
     void setUserIsActive(@Param("userId") Long id, @Param("isActive") boolean isActive);
 
     @Query("update User u set u.password = :password WHERE u.id = :userId")

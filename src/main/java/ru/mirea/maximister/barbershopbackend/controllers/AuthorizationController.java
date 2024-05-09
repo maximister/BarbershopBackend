@@ -18,7 +18,7 @@ import ru.mirea.maximister.barbershopbackend.services.AuthService;
 public class AuthorizationController {
     private final AuthService authService;
     @PostMapping("/signin")
-    public ResponseEntity<?> signIn(@RequestBody  SignInRequest request) {
+    public ResponseEntity<?> signIn(@RequestBody  SignInRequest request) { //+
 
 
         return new ResponseEntity<>(
@@ -28,7 +28,7 @@ public class AuthorizationController {
     }
 
     @PostMapping("/signup")
-    public ResponseEntity<?> signUp(@RequestBody  SignUpRequest request) {
+    public ResponseEntity<?> signUp(@RequestBody  SignUpRequest request) { //+
         return new ResponseEntity<>(
                 authService.signUp(request),
                 HttpStatus.OK

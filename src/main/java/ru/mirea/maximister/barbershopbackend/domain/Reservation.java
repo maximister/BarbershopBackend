@@ -1,10 +1,7 @@
 package ru.mirea.maximister.barbershopbackend.domain;
 
 import jakarta.persistence.*;
-import lombok.AllArgsConstructor;
-import lombok.Builder;
-import lombok.Data;
-import lombok.NoArgsConstructor;
+import lombok.*;
 import ru.mirea.maximister.barbershopbackend.domain.enums.ReservationStatus;
 
 import java.sql.Time;
@@ -14,7 +11,8 @@ import java.util.Date;
 
 @Entity
 @Table(name="reservation")
-@Data
+@Getter
+@Setter
 @Builder
 @AllArgsConstructor
 @NoArgsConstructor

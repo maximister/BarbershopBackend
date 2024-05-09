@@ -12,20 +12,23 @@ import ru.mirea.maximister.barbershopbackend.dto.schedule.DeleteScheduleRequest;
 import ru.mirea.maximister.barbershopbackend.dto.schedule.UpdateScheduleListRequest;
 import ru.mirea.maximister.barbershopbackend.dto.schedule.UpdateScheduleRequest;
 import ru.mirea.maximister.barbershopbackend.services.BarberService;
+import ru.mirea.maximister.barbershopbackend.utils.TokenExtractor;
 
 @RestController
 @RequestMapping("/barbers")
 @AllArgsConstructor
 public class BarberController {
     private final BarberService barberService;
-    private static final String TOKEN = "Token";
+    private static final String TOKEN = "Authorization";
     //Привязка к барбершопу
     //Добавление и удаление услуг из своего списка
     //установка графика
 
+
+    //+
     @PostMapping
-    public ResponseEntity<?> setBarbershop(@RequestHeader(TOKEN) String token, @RequestBody  SetBarberBarbershopRequest request) {
-        barberService.setBarbersBarbershop(token, request);
+    public ResponseEntity<?> setBarbershop(@RequestHeader(TOKEN) String token, @RequestBody SetBarberBarbershopRequest request) {
+        barberService.setBarbersBarbershop(TokenExtractor.extractToken(token), request);
 
         return new ResponseEntity<>(
                 "Successfully added barber to barbershop",
@@ -33,9 +36,10 @@ public class BarberController {
         );
     }
 
+    //+
     @PostMapping("/service")
     public ResponseEntity<?> addService(@RequestHeader(TOKEN) String token, @RequestBody AddServiceToBarberRequest request) {
-        barberService.addServiceToBarber(token, request);
+        barberService.addServiceToBarber(TokenExtractor.extractToken(token), request);
 
         return new ResponseEntity<>(
                 "Successfully added service to barber",
@@ -43,9 +47,10 @@ public class BarberController {
         );
     }
 
+    //+
     @DeleteMapping("/service")
     public ResponseEntity<?> deleteService(@RequestHeader(TOKEN) String token, @RequestBody DeleteBarbersServiceRequest request) {
-        barberService.deleteBarbersService(token, request);
+        barberService.deleteBarbersService(TokenExtractor.extractToken(token), request);
 
         return new ResponseEntity<>(
                 "Successfully deleted service to barber",
@@ -53,36 +58,40 @@ public class BarberController {
         );
     }
 
+    //+
     @PostMapping("/schedule/list")
     public ResponseEntity<?> updateSchedule(@RequestHeader(TOKEN) String token, @RequestBody UpdateScheduleListRequest request) {
-        barberService.updateScheduleRequest(token, request);
+        barberService.updateScheduleRequest(TokenExtractor.extractToken(token), request);
         return new ResponseEntity<>(
                 "Successfully updated schedule for barber",
                 HttpStatus.OK
         );
     }
 
+    //+
     @PostMapping("/schedule")
     public ResponseEntity<?> updateSchedule(@RequestHeader(TOKEN) String token, @RequestBody UpdateScheduleRequest request) {
-        barberService.updateScheduleRequest(token, request);
+        barberService.updateScheduleRequest(TokenExtractor.extractToken(token), request);
         return new ResponseEntity<>(
                 "Successfully updated schedule for barber",
                 HttpStatus.OK
         );
     }
+
 
     @DeleteMapping("/schedule")
     public ResponseEntity<?> deleteSchedule(@RequestHeader(TOKEN) String token, @RequestBody DeleteScheduleRequest request) {
-        barberService.deleteSchedule(token, request);
+        barberService.deleteSchedule(TokenExtractor.extractToken(token), request);
         return new ResponseEntity<>(
                 "Successfully deleted schedule for barber",
                 HttpStatus.OK
         );
     }
 
+    //+
     @PostMapping("/schedule/vocation")
     public ResponseEntity<?> addVocation(@RequestHeader(TOKEN) String token, @RequestBody AddVocationRequest request) {
-        barberService.addVocation(token,request);
+        barberService.addVocation(TokenExtractor.extractToken(token), request);
         return new ResponseEntity<>(
                 "Successfully added vocation for barber",
                 HttpStatus.OK

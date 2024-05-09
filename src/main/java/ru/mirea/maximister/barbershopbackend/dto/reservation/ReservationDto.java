@@ -1,10 +1,9 @@
 package ru.mirea.maximister.barbershopbackend.dto.reservation;
 
 import jakarta.validation.constraints.NotNull;
-import ru.mirea.maximister.barbershopbackend.dto.barbershop.responses.BarbershopResponse;
-import ru.mirea.maximister.barbershopbackend.dto.service.Response.ServiceResponse;
-import ru.mirea.maximister.barbershopbackend.dto.users.responses.BarberResponse;
-import ru.mirea.maximister.barbershopbackend.dto.users.responses.ClientResponse;
+import ru.mirea.maximister.barbershopbackend.dto.barbershop.responses.BarbershopDto;
+import ru.mirea.maximister.barbershopbackend.dto.service.Response.ServiceDto;
+import ru.mirea.maximister.barbershopbackend.dto.users.responses.UserDto;
 
 import java.time.LocalDate;
 import java.time.OffsetTime;
@@ -15,12 +14,12 @@ public record ReservationDto(
         @NotNull
         OffsetTime time,
         @NotNull
-        ServiceResponse service,
+        ServiceDto service,
         @NotNull
-        BarberResponse barber,
+        UserDto barber,
         @NotNull
-        ClientResponse client,
+        UserDto client,
         @NotNull
-        BarbershopResponse barbershop
+        BarbershopDto barbershop
 ) {
 }

@@ -15,10 +15,7 @@ import ru.mirea.maximister.barbershopbackend.dto.schedule.AddVocationRequest;
 import ru.mirea.maximister.barbershopbackend.dto.schedule.DeleteScheduleRequest;
 import ru.mirea.maximister.barbershopbackend.dto.schedule.UpdateScheduleListRequest;
 import ru.mirea.maximister.barbershopbackend.dto.schedule.UpdateScheduleRequest;
-import ru.mirea.maximister.barbershopbackend.exceptions.BarberException;
-import ru.mirea.maximister.barbershopbackend.exceptions.BarbershopException;
-import ru.mirea.maximister.barbershopbackend.exceptions.UserNotFoundException;
-import ru.mirea.maximister.barbershopbackend.exceptions.UserRoleException;
+import ru.mirea.maximister.barbershopbackend.exceptions.*;
 import ru.mirea.maximister.barbershopbackend.repository.ScheduleRepository;
 import ru.mirea.maximister.barbershopbackend.repository.ServiceRepository;
 import ru.mirea.maximister.barbershopbackend.repository.UserRepository;
@@ -28,6 +25,9 @@ import ru.mirea.maximister.barbershopbackend.utils.DateUtils;
 import java.time.DateTimeException;
 import java.time.LocalDate;
 import java.time.OffsetTime;
+import java.util.ArrayList;
+import java.util.LinkedList;
+import java.util.List;
 
 @Service
 @Slf4j
@@ -59,9 +59,13 @@ public class BarberService {
             throw new UserRoleException("User " + email + " is not a BARBER");
         }
 
+        if (barber.getBarbershop().equals(barbershop)) {
+            throw new BarberException("Barber " + barber.getEmail() +
+                    " is already work in barbershop " + barbershop.getAddress());
+        }
+
         barbershop.addBarber(barber);
         barbershopService.updateBarbershop(barbershop);
-        userRepository.save(barber);
         log.info("Successfully added barber {} to barbershop {}",
                 barber.getEmail(),
                 barbershop.getAddress()
@@ -108,8 +112,6 @@ public class BarberService {
         }
 
         barber.addService(service);
-        userRepository.save(barber);
-        serviceRepository.save(service);
         log.info("Successfully added service {} to barber {}",
                 service.getName(), barber.getEmail());
     }
@@ -129,12 +131,10 @@ public class BarberService {
             log.info("Barber {} has no such service {}",
                     barber.getEmail(), service.getName());
 
-            throw  new BarberException("Barber has no such service: " + request.serviceName());
+            throw new BarberException("Barber has no such service: " + request.serviceName());
         }
 
         barber.deleteService(service);
-        userRepository.save(barber);
-        serviceRepository.save(service);
         log.info("Service {} was successfully deleted from barber {}",
                 service.getName(), barber.getEmail());
     }
@@ -151,8 +151,10 @@ public class BarberService {
 
         LocalDate curDate = DateUtils.getClosestDateByDayOfWeek(request.dayOfWeek());
         User barber = getBarber(email);
+        validateSchedule(barber.getId(), curDate, request.from(), request.to().minusMinutes(15));
 
         //Добавляем расписание на 4 недели вперед
+        List<Schedule> scheduleList = new LinkedList<>();
         for (int i = 0; i < 4; i++) {
             curDate = curDate.plusWeeks(i);
             OffsetTime start = request.from();
@@ -164,11 +166,11 @@ public class BarberService {
                         .time(start)
                         .status(true)
                         .build();
-                scheduleRepository.save(scheduleUnit);
+                scheduleList.add(scheduleUnit);
                 start = start.plusMinutes(15);
             }
         }
-
+        scheduleRepository.saveAll(scheduleList);
         log.info("Successfully updated schedule: {}", request);
     }
 
@@ -211,7 +213,7 @@ public class BarberService {
     }
 
     private void validateTime(OffsetTime from, OffsetTime to) {
-        if (from.isBefore(to)) {
+        if (to.isBefore(from)) {
             log.info("Invalid time format: to is less than from");
             throw new DateTimeException("Invalid time format: to is less than from");
         }
@@ -221,6 +223,13 @@ public class BarberService {
         } catch (IllegalArgumentException e) {
             log.info("Invalid time format: {}", e.getMessage());
             throw new DateTimeException(e.getMessage());
+        }
+    }
+
+    private void validateSchedule(Long id, LocalDate date, OffsetTime start, OffsetTime end) {
+        if (!scheduleRepository.findByBarberIdAndDateAndTimeGreaterThanEqualAndTimeLessThanEqual(
+                id, date, start, end).isEmpty()) {
+            throw new ScheduleConflictException("Invalid interval: " + date + " " + start + " - " + end);
         }
     }
 }

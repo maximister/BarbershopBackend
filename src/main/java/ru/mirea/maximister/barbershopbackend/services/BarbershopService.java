@@ -9,12 +9,9 @@ import ru.mirea.maximister.barbershopbackend.domain.User;
 import ru.mirea.maximister.barbershopbackend.dto.barbershop.requests.*;
 import ru.mirea.maximister.barbershopbackend.dto.barbershop.responses.BarbershopBarbersResponse;
 import ru.mirea.maximister.barbershopbackend.dto.barbershop.responses.BarbershopList;
-import ru.mirea.maximister.barbershopbackend.dto.mappers.BarbershopToBarbershopResponseMapper;
-import ru.mirea.maximister.barbershopbackend.dto.mappers.UserToResponsesMapper;
-import ru.mirea.maximister.barbershopbackend.exceptions.BarbershopAlreadyExistsException;
-import ru.mirea.maximister.barbershopbackend.exceptions.BarbershopException;
-import ru.mirea.maximister.barbershopbackend.exceptions.BarbershopNotFoundException;
-import ru.mirea.maximister.barbershopbackend.exceptions.ServiceNotFoundException;
+import ru.mirea.maximister.barbershopbackend.dto.mappers.BarbershopToBarbershopDtoMapper;
+import ru.mirea.maximister.barbershopbackend.dto.mappers.UserToDtoMapper;
+import ru.mirea.maximister.barbershopbackend.exceptions.*;
 import ru.mirea.maximister.barbershopbackend.repository.BarbershopRepository;
 import ru.mirea.maximister.barbershopbackend.repository.ServiceRepository;
 import ru.mirea.maximister.barbershopbackend.repository.UserRepository;
@@ -31,8 +28,8 @@ public class BarbershopService {
     private final BarbershopRepository barbershopRepository;
     private final UserRepository userRepository;
     private final ServiceRepository serviceRepository;
-    private final BarbershopToBarbershopResponseMapper barbershopMapper;
-    private final UserToResponsesMapper userMapper;
+    private final BarbershopToBarbershopDtoMapper barbershopMapper;
+    private final UserToDtoMapper userMapper;
     private static final OffsetTime MIN_OPEN_TIME =
             OffsetTime.of(8, 0, 0, 0, ZoneOffset.UTC);
     private static final OffsetTime MAX_OPEN_TIME =
@@ -65,7 +62,7 @@ public class BarbershopService {
     public BarbershopList getAllBarberShops() {
         return new BarbershopList(
                 barbershopRepository.findAll().stream()
-                        .map(barbershopMapper::barbershopToBarbershopResponse)
+                        .map(barbershopMapper::barbershopToBarbershopDto)
                         .collect(Collectors.toList())
         );
     }
@@ -74,7 +71,7 @@ public class BarbershopService {
     public BarbershopList getAllBarbershopsByCity(String city) {
         return new BarbershopList(
                 barbershopRepository.findBarbershopsByCity(city).stream()
-                        .map(barbershopMapper::barbershopToBarbershopResponse)
+                        .map(barbershopMapper::barbershopToBarbershopDto)
                         .collect(Collectors.toList())
         );
     }
@@ -114,7 +111,7 @@ public class BarbershopService {
                 request.city(), request.street(), request.number()
         );
 
-        validateBarbershopWorkTime(request.openTime(), request.openTime());
+        validateBarbershopWorkTime(request.openTime(), request.closeTime());
 
         barbershop.setCloseTime(request.closeTime());
         barbershop.setOpenTime(request.openTime());
@@ -146,7 +143,7 @@ public class BarbershopService {
                 barbershopRepository
                         .findAllBarbersByBarbershopId(barbershop.getId())
                         .stream()
-                        .map(userMapper::userToBarberResponse)
+                        .map(userMapper::userToUSerDto)
                         .collect(Collectors.toList())
         );
     }
@@ -179,9 +176,12 @@ public class BarbershopService {
                     return new ServiceNotFoundException(request.serviceName());
                 });
 
+        if (barbershop.getServices().contains(service)) {
+            throw new ServiceAlreadyExistsException("Barbershop " + barbershop.getAddress() +
+                    " already has service " + service.getName());
+        }
+
         barbershop.addService(service);
-        barbershopRepository.save(barbershop);
-        serviceRepository.save(service);
         log.info("Service {} was added to barbershop {}", service.getName(), barbershop.getAddress());
     }
 
@@ -203,7 +203,5 @@ public class BarbershopService {
         }
 
         barbershopRepository.save(barbershop);
-
-        //TODO: проверить удаление
     }
 }

@@ -4,6 +4,7 @@ import lombok.AllArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import ru.mirea.maximister.barbershopbackend.dto.mappers.UserToDtoMapper;
 import ru.mirea.maximister.barbershopbackend.dto.users.requests.DeleteUserRequest;
 import ru.mirea.maximister.barbershopbackend.services.UserService;
 
@@ -12,11 +13,13 @@ import ru.mirea.maximister.barbershopbackend.services.UserService;
 @AllArgsConstructor
 public class UserController {
     private final UserService userService;
+    private final UserToDtoMapper mapper;
 
+    //+
     @GetMapping("/{id}")
     public ResponseEntity<?> findById(@PathVariable Long id) {
         return new ResponseEntity<>(
-                userService.findUserById(id),
+                mapper.userToUSerDto(userService.findUserById(id)),
                 HttpStatus.OK
         );
     }
@@ -31,6 +34,7 @@ public class UserController {
     }
 
 
+    //+
     @GetMapping("/admins")
     public ResponseEntity<?> getAllAdminsByActivity() {
         return new ResponseEntity<>(

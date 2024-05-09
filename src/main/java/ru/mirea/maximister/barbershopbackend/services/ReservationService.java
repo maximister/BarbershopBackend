@@ -9,9 +9,9 @@ import ru.mirea.maximister.barbershopbackend.domain.Reservation;
 import ru.mirea.maximister.barbershopbackend.domain.Schedule;
 import ru.mirea.maximister.barbershopbackend.domain.User;
 import ru.mirea.maximister.barbershopbackend.domain.enums.ReservationStatus;
-import ru.mirea.maximister.barbershopbackend.dto.mappers.BarbershopToBarbershopResponseMapper;
-import ru.mirea.maximister.barbershopbackend.dto.mappers.ServiceToServiceResponseMapper;
-import ru.mirea.maximister.barbershopbackend.dto.mappers.UserToResponsesMapper;
+import ru.mirea.maximister.barbershopbackend.dto.mappers.BarbershopToBarbershopDtoMapper;
+import ru.mirea.maximister.barbershopbackend.dto.mappers.ServiceToServiceDtoMapper;
+import ru.mirea.maximister.barbershopbackend.dto.mappers.UserToDtoMapper;
 import ru.mirea.maximister.barbershopbackend.dto.reservation.FreeBarbersSlots;
 import ru.mirea.maximister.barbershopbackend.dto.reservation.FreeSlot;
 import ru.mirea.maximister.barbershopbackend.dto.reservation.requests.AddReservationRequest;
@@ -42,9 +42,9 @@ public class ReservationService {
     private final ServiceRepository serviceRepository;
     private final BarberService barberService;
     private final BarbershopService barbershopService;
-    private final UserToResponsesMapper userMapper;
-    private final ServiceToServiceResponseMapper serviceMapper;
-    private final BarbershopToBarbershopResponseMapper barbershopMapper;
+    private final UserToDtoMapper userMapper;
+    private final ServiceToServiceDtoMapper serviceMapper;
+    private final BarbershopToBarbershopDtoMapper barbershopMapper;
     private final JwtService jwtService;
 
 
@@ -93,21 +93,31 @@ public class ReservationService {
                 );
 
         OffsetTime ptr = reservation.getTime();
+        if (scheduleList.isEmpty()) {
+            log.info("error during creating reservation {}: barber has no space in schedule",
+                    request
+            );
+            throw new ReservationException("Barber has no space in schedule");
+        }
+
         for (Schedule scheduleUnit : scheduleList) {
-            if (ptr != scheduleUnit.getTime()) {
+            if (!ptr.equals(scheduleUnit.getTime())) {
                 log.info("error during creating reservation {}: barber has no space in schedule",
                         request
                 );
                 throw new ReservationException("Barber has no space in schedule");
             }
 
-            scheduleUnit.setStatus(false);
-            scheduleRepository.save(scheduleUnit);
             ptr = ptr.plusMinutes(15);
             if (ptr.isAfter(end)) {
                 break;
             }
         }
+
+        scheduleRepository.updateStatusByBarberIdAndDateAndTimeRange(
+                false, reservation.getBarberId(), reservation.getDate(),
+                reservation.getTime(), end
+        );
 
         reservationRepository.save(reservation);
         log.info("Successfully added reservation {}", reservation);
@@ -116,8 +126,8 @@ public class ReservationService {
     @Transactional
     public void denyReservation(String token, DenyReservationRequest request) {
         User barber = barberService.getBarber(request.barberEmail());
-        Reservation reservation = reservationRepository.findByBarberIdAndDateAndTime(
-                barber.getId(), request.date(), request.time()
+        Reservation reservation = reservationRepository.findByBarberIdAndDateAndTimeAndStatus(
+                barber.getId(), request.date(), request.time(), ReservationStatus.ACTIVE
         ).orElseThrow(() -> {
             log.info("error during denying reservation {}: no such reservation", request);
             return new ReservationException("No such reservation");
@@ -136,7 +146,6 @@ public class ReservationService {
         scheduleRepository.updateStatusByBarberIdAndDateAndTimeRange(
                 true, barber.getId(), reservation.getDate(), reservation.getTime(), end);
 
-        reservationRepository.save(reservation);
         log.info("Successfully denied reservation {}", reservation);
     }
 
@@ -150,7 +159,7 @@ public class ReservationService {
 
         log.info("Created list of clients {} reservations", email);
         return new ClientReservationList(
-                userMapper.userToClientResponse(client),
+                userMapper.userToUSerDto(client),
                 reservations.stream()
                         .map(r -> toReservationWithoutClientInfoDtoMapper(
                                 r,
@@ -171,7 +180,7 @@ public class ReservationService {
 
         log.info("Created list of barbers {} reservations", email);
         return new BarberReservationsList(
-                userMapper.userToBarberResponse(barber),
+                userMapper.userToUSerDto(barber),
                 reservations.stream()
                         .map(this::toReservationWithoutBarberInfoDto)
                         .collect(Collectors.toList())
@@ -182,11 +191,11 @@ public class ReservationService {
     public BarberFreeSlotsResponse getBarbersSlots(String barberEmail) {
         User barber = barberService.getBarber(barberEmail);
         List<Schedule> slots = scheduleRepository
-                .findByBarberIdAndStatus(barber.getId(), true);
+                .findByBarberIdAndStatusOrderByDateAscTimeAsc(barber.getId(), true);
 
         log.info("Created list of barbers {} slots", barberEmail);
         return new BarberFreeSlotsResponse(
-                userMapper.userToBarberResponse(barber),
+                userMapper.userToUSerDto(barber),
                 slots.stream().map(s -> new FreeSlot(s.getDate(), s.getTime()))
                         .collect(Collectors.toList())
         );
@@ -200,8 +209,8 @@ public class ReservationService {
         Set<User> barbers = barbershop.getBarbers();
         List<FreeBarbersSlots> slots = barbers.stream()
                 .map(b -> new FreeBarbersSlots(
-                        userMapper.userToBarberResponse(b),
-                        scheduleRepository.findByBarberIdAndStatus(b.getId(), true)
+                        userMapper.userToUSerDto(b),
+                        scheduleRepository.findByBarberIdAndStatusOrderByDateAscTimeAsc(b.getId(), true)
                                 .stream().map(s -> new FreeSlot(s.getDate(), s.getTime()))
                                 .collect(Collectors.toList())
                 ))
@@ -209,7 +218,7 @@ public class ReservationService {
 
         log.info("Created list of barbershop {} slots", barbershop.getAddress());
         return new SlotsInBarbershopResponse(
-                barbershopMapper.barbershopToBarbershopResponse(barbershop),
+                barbershopMapper.barbershopToBarbershopDto(barbershop),
                 slots
         );
     }
@@ -221,9 +230,9 @@ public class ReservationService {
         return new ReservationWithoutClientInfoDto(
                 reservation.getDate(),
                 reservation.getTime(),
-                serviceMapper.serviceToServiceResponse(service),
-                userMapper.userToBarberResponse(barber),
-                barbershopMapper.barbershopToBarbershopResponse(barber.getBarbershop())
+                serviceMapper.serviceToServiceDto(service),
+                userMapper.userToUSerDto(barber),
+                barbershopMapper.barbershopToBarbershopDto(barber.getBarbershop())
         );
     }
 
@@ -236,8 +245,8 @@ public class ReservationService {
         return new ReservationWithoutBarberInfoDto(
                 reservation.getDate(),
                 reservation.getTime(),
-                serviceMapper.serviceToServiceResponse(service),
-                userMapper.userToClientResponse(client)
+                serviceMapper.serviceToServiceDto(service),
+                userMapper.userToUSerDto(client)
         );
     }
 }

@@ -13,7 +13,7 @@ public interface ReservationRepository extends JpaRepository<Reservation, Long> 
     List<Reservation> findByClientId(Long clientId);
     List<Reservation> findByClientIdAndStatus(Long clientId, ReservationStatus status);
     List<Reservation> findByBarberId(Long barberId);
-    Optional<Reservation> findByBarberIdAndDateAndTime(Long barberId, LocalDate date, OffsetTime time);
+    Optional<Reservation> findByBarberIdAndDateAndTimeAndStatus(Long barberId, LocalDate date, OffsetTime time, ReservationStatus status);
     List<Reservation> findByBarberIdAndStatus(Long barberId, ReservationStatus status);
     List<Reservation> findByDateBetween(LocalDate start, LocalDate end);
     List<Reservation> findByStatusAndDateAndTimeLessThan(ReservationStatus status, LocalDate date, OffsetTime time);

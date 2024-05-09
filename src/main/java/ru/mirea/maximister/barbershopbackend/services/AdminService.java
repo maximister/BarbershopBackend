@@ -7,9 +7,8 @@ import org.springframework.transaction.annotation.Transactional;
 import ru.mirea.maximister.barbershopbackend.domain.Service;
 import ru.mirea.maximister.barbershopbackend.domain.User;
 import ru.mirea.maximister.barbershopbackend.domain.enums.Role;
-import ru.mirea.maximister.barbershopbackend.dto.admin.requests.AddAdminRequest;
-import ru.mirea.maximister.barbershopbackend.dto.admin.requests.AddBarberRequest;
 import ru.mirea.maximister.barbershopbackend.dto.admin.requests.BanUserRequest;
+import ru.mirea.maximister.barbershopbackend.dto.admin.requests.RevokeRoleRequest;
 import ru.mirea.maximister.barbershopbackend.dto.admin.responses.BanUserResponse;
 import ru.mirea.maximister.barbershopbackend.dto.service.requests.AddServiceRequest;
 import ru.mirea.maximister.barbershopbackend.dto.service.requests.DeleteServiceRequest;
@@ -21,7 +20,6 @@ import ru.mirea.maximister.barbershopbackend.repository.UserRepository;
 import ru.mirea.maximister.barbershopbackend.utils.DateUtils;
 
 import java.time.DateTimeException;
-import java.time.Duration;
 
 @org.springframework.stereotype.Service
 @AllArgsConstructor
@@ -41,19 +39,19 @@ public class AdminService {
 
     @Transactional
     public BanUserResponse banUser(BanUserRequest request) {
-        User user = userRepository.findByEmail(request.userEmail())
-                .orElseThrow(() -> new UsernameNotFoundException(request.userEmail()));
+        User user = userRepository.findByEmail(request.email())
+                .orElseThrow(() -> new UsernameNotFoundException(request.email()));
 
         user.setActive(false);
         userRepository.setUserIsActive(user.getId(), false);
 
-        return new BanUserResponse(user.getEmail(), user.getFullname(), request.reason());
+        return new BanUserResponse(user.getEmail(), request.reason());
     }
 
     @Transactional
-    public void addBarber(AddBarberRequest request) {
-        User barber = userRepository.findByEmail(request.userEmail())
-                .orElseThrow(() -> new UsernameNotFoundException(request.userEmail()));
+    public void addBarber(String barberEmail) {
+        User barber = userRepository.findByEmail(barberEmail)
+                .orElseThrow(() -> new UsernameNotFoundException(barberEmail));
 
         if (barber.getRoles().contains(Role.ROLE_BARBER)) {
             throw new UserRoleException("User is already BARBER");
@@ -64,9 +62,9 @@ public class AdminService {
     }
 
     @Transactional
-    public void addAdmin(AddAdminRequest request) {
-        User barber = userRepository.findByEmail(request.email())
-                .orElseThrow(() -> new UsernameNotFoundException(request.email()));
+    public void addAdmin(String adminEmail) {
+        User barber = userRepository.findByEmail(adminEmail)
+                .orElseThrow(() -> new UsernameNotFoundException(adminEmail));
 
         if (barber.getRoles().contains(Role.ROLE_ADMIN)) {
             throw new UserRoleException("User is already ADMIN");
@@ -114,5 +112,18 @@ public class AdminService {
         serviceRepository.deleteById(service.getId());
         log.info("Successfully deleted service {}", request.name());
         //TODO: проверить удаление сервиса
+    }
+
+    @Transactional
+    public void revokeRole(RevokeRoleRequest request) {
+        User user = userRepository.findByEmail(request.email())
+                .orElseThrow(() -> new UsernameNotFoundException(request.email()));
+
+        if (!user.getRoles().contains(request.role())) {
+            throw new UserRoleException("User has no such role");
+        }
+
+        user.getRoles().remove(request.role());
+        userRepository.save(user);
     }
 }

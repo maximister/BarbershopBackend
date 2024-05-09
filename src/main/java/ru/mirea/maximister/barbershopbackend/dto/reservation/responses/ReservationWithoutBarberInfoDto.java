@@ -1,8 +1,8 @@
 package ru.mirea.maximister.barbershopbackend.dto.reservation.responses;
 
 import jakarta.validation.constraints.NotNull;
-import ru.mirea.maximister.barbershopbackend.dto.service.Response.ServiceResponse;
-import ru.mirea.maximister.barbershopbackend.dto.users.responses.ClientResponse;
+import ru.mirea.maximister.barbershopbackend.dto.service.Response.ServiceDto;
+import ru.mirea.maximister.barbershopbackend.dto.users.responses.UserDto;
 
 import java.time.LocalDate;
 import java.time.OffsetTime;
@@ -13,8 +13,8 @@ public record ReservationWithoutBarberInfoDto(
         @NotNull
         OffsetTime time,
         @NotNull
-        ServiceResponse service,
+        ServiceDto service,
         @NotNull
-        ClientResponse client
+        UserDto client
 ) {
 }

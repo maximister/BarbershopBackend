@@ -11,7 +11,7 @@ app:
     token:
       secret:
         key: ${JWT_TOKEN}
-      expiration: 3600000
+      expiration: 360000000
 
 
 spring:
@@ -24,5 +24,11 @@ spring:
     database-platform: org.hibernate.dialect.PostgreSQLDialect
     hibernate:
       ddl-auto: update
+      order_inserts: true
+      generate_statistics: true
+      order_updates: true
+      jdbc:
+        batch_size: 500
     open-in-view: false
     show-sql: true
+

@@ -1,11 +1,7 @@
 package ru.mirea.maximister.barbershopbackend.domain;
 
-import com.fasterxml.jackson.annotation.JsonBackReference;
 import jakarta.persistence.*;
-import lombok.AllArgsConstructor;
-import lombok.Builder;
-import lombok.Data;
-import lombok.NoArgsConstructor;
+import lombok.*;
 
 import java.time.OffsetTime;
 import java.time.ZoneOffset;
@@ -13,7 +9,8 @@ import java.util.HashSet;
 import java.util.Set;
 
 @Entity
-@Data
+@Getter
+@Setter
 @Table(name = "barbershop")
 @Builder
 @AllArgsConstructor
@@ -35,8 +32,8 @@ public class Barbershop {
     private OffsetTime openTime;
     private OffsetTime closeTime;
 
-    @ManyToMany
-    @JsonBackReference
+    @ManyToMany(fetch = FetchType.EAGER,
+            cascade = { CascadeType.PERSIST, CascadeType.MERGE, CascadeType.DETACH, CascadeType.REFRESH })
     @JoinTable(
             name = "barbershop_service",
             joinColumns = @JoinColumn(name = "barbershop_id"),
@@ -58,8 +55,8 @@ public class Barbershop {
     }
 
     public void deleteService(Service service) {
-        service.getBarbershops().remove(this);
         services.remove(service);
+        service.getBarbershops().remove(this);
     }
 
 

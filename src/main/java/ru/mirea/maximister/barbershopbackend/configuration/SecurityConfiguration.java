@@ -44,12 +44,14 @@ public class SecurityConfiguration {
                         .sessionCreationPolicy(SessionCreationPolicy.STATELESS)
                 )
                 .authorizeHttpRequests(authorize -> authorize
-                        .requestMatchers(HttpMethod.POST, "/auth/*").permitAll()
-                        .requestMatchers(HttpMethod.GET, "/", "/barbershops**").permitAll()
-                        .requestMatchers("/barbershops**", "/admin**", "/admin/users**").hasRole("ADMIN")
+                        .requestMatchers(HttpMethod.POST, "/auth/**").permitAll()
+                        .requestMatchers(HttpMethod.GET, "/", "/barbershops/**").permitAll()
+                        .requestMatchers("/barbershops/**", "/admin/**", "/admin/users/**").hasRole("ADMIN")
                         .requestMatchers("/reservations/barber").hasAnyRole("ADMIN", "BARBER")
-                        .requestMatchers("/reservations**").permitAll()
-                        .requestMatchers("/barbers**").hasRole("BARBER")
+                        .requestMatchers("/reservations/**").authenticated()
+                        .requestMatchers("/barbers/**").hasRole("BARBER")
+                        //TODO: delete
+                        .requestMatchers("/zalupa/**").permitAll()
                         .anyRequest().hasRole("USER")
                 )
                 .authenticationProvider(authenticationProvider()).addFilterBefore(

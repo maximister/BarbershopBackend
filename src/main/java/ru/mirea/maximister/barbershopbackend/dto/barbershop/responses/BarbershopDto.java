@@ -1,6 +1,9 @@
 package ru.mirea.maximister.barbershopbackend.dto.barbershop.responses;
 
-public record BarbershopResponse(
+import java.time.OffsetTime;
+
+public record BarbershopDto(
+        Long id,
         String name,
         String description,
         String city,
@@ -8,6 +11,8 @@ public record BarbershopResponse(
         String street,
         String number,
         double longitude,
-        double latitude
+        double latitude,
+        OffsetTime openTime,
+        OffsetTime closeTime
 ) {
 }

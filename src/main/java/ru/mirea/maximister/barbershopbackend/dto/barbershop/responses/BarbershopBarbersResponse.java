@@ -2,7 +2,7 @@ package ru.mirea.maximister.barbershopbackend.dto.barbershop.responses;
 
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.PositiveOrZero;
-import ru.mirea.maximister.barbershopbackend.dto.users.responses.BarberResponse;
+import ru.mirea.maximister.barbershopbackend.dto.users.responses.UserDto;
 
 import java.util.List;
 
@@ -11,6 +11,6 @@ public record BarbershopBarbersResponse(
         Long barbershopId,
         @NotBlank
         String name,
-        List<BarberResponse> barbers
+        List<UserDto> barbers
 ) {
 }
