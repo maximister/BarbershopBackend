@@ -1,19 +1,29 @@
 package ru.mirea.maximister.barbershopbackend.domain;
 
 import jakarta.persistence.*;
-import lombok.Data;
+import lombok.*;
+import ru.mirea.maximister.barbershopbackend.domain.enums.ReservationStatus;
 
-import java.time.OffsetDateTime;
+import java.sql.Time;
+import java.time.LocalDate;
+import java.time.OffsetTime;
+import java.util.Date;
 
 @Entity
 @Table(name="reservation")
-@Data
+@Getter
+@Setter
+@Builder
+@AllArgsConstructor
+@NoArgsConstructor
 public class Reservation {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
-    private OffsetDateTime date;
-    private String status;
+    private LocalDate date;
+    private OffsetTime time;
+    @Enumerated(EnumType.STRING)
+    private ReservationStatus status;
     private Long serviceId;
     private Long barberId;
     private Long clientId;

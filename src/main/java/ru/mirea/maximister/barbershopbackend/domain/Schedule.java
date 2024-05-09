@@ -1,20 +1,27 @@
 package ru.mirea.maximister.barbershopbackend.domain;
 
 import jakarta.persistence.*;
-import lombok.Data;
+import lombok.*;
+import org.hibernate.annotations.BatchSize;
 
-import java.time.OffsetDateTime;
+import java.time.LocalDate;
+import java.time.OffsetTime;
 
 @Entity
 @Table(name="schedule")
-@Data
+@Getter
+@Setter
+@Builder
+@AllArgsConstructor
+@NoArgsConstructor
+@BatchSize(size = 20)
 public class Schedule {
     @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @GeneratedValue(strategy = GenerationType.AUTO)
     private Long id;
-    private OffsetDateTime date;
+    private LocalDate date;
+    @Column(columnDefinition = "TIME")
+    private OffsetTime time;
     private Boolean status;
     private Long barberId;
-
-    //TODO: время не должно превышать время работы салона!!
 }

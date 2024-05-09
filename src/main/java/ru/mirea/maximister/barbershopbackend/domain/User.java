@@ -1,7 +1,9 @@
 package ru.mirea.maximister.barbershopbackend.domain;
 
 import jakarta.persistence.*;
-import lombok.Data;
+import lombok.*;
+import org.hibernate.annotations.NotFound;
+import org.hibernate.annotations.NotFoundAction;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
 import ru.mirea.maximister.barbershopbackend.domain.enums.Role;
@@ -13,7 +15,11 @@ import java.util.Set;
 
 @Entity
 @Table(name = "users")
-@Data
+@Getter
+@Setter
+@Builder
+@AllArgsConstructor
+@NoArgsConstructor
 public class User implements UserDetails {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -22,8 +28,8 @@ public class User implements UserDetails {
     @Column(unique = true)
     private String email;
     private String phoneNumber;
-    private String name;
-    private boolean isActive;
+    private String fullname;
+    private boolean active;
     private LocalDateTime dateOfCreation;
 
     @Column(length = 1000)
@@ -33,8 +39,25 @@ public class User implements UserDetails {
     @CollectionTable(name = "user_role",
             joinColumns = @JoinColumn(name = "user_id"))
     @Enumerated(EnumType.STRING)
+    @Builder.Default
     private Set<Role> roles = new HashSet<>();
 
+
+    @ManyToMany(mappedBy = "barbers")
+    @Builder.Default
+    private Set<Service> services = new HashSet<>();
+
+    @ManyToOne(cascade = {CascadeType.PERSIST, CascadeType.MERGE})
+    private Barbershop barbershop;
+
+    public void addService(Service service) {
+        services.add(service);
+        service.getBarbers().add(this);
+    }
+    public void deleteService(Service service) {
+        services.remove(service);
+        service.getBarbers().remove(this);
+    }
 
     @PrePersist
     private void init() {
@@ -69,6 +92,6 @@ public class User implements UserDetails {
 
     @Override
     public boolean isEnabled() {
-        return isActive;
+        return active;
     }
 }
