@@ -45,7 +45,8 @@ public class SecurityConfiguration {
                 )
                 .authorizeHttpRequests(authorize -> authorize
                         .requestMatchers(HttpMethod.POST, "/auth/**").permitAll()
-                        .requestMatchers(HttpMethod.GET, "/", "/barbershops/**").permitAll()
+                        .requestMatchers(HttpMethod.GET, "/", "/swagger-ui/**", "/barbershops/**").permitAll()
+                        .requestMatchers("/api/v1/auth/**", "/v3/api-docs/**", "/swagger-ui/**").permitAll()
                         .requestMatchers("/barbershops/**", "/admin/**", "/admin/users/**").hasRole("ADMIN")
                         .requestMatchers("/reservations/barber").hasAnyRole("ADMIN", "BARBER")
                         .requestMatchers("/reservations/**").authenticated()
