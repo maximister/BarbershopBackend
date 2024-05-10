@@ -6,7 +6,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import ru.mirea.maximister.barbershopbackend.domain.User;
 import ru.mirea.maximister.barbershopbackend.domain.enums.Role;
-import ru.mirea.maximister.barbershopbackend.dto.mappers.UserToDtoMapper;
+import ru.mirea.maximister.barbershopbackend.mappers.UserToDtoMapper;
 import ru.mirea.maximister.barbershopbackend.dto.users.requests.DeleteUserRequest;
 import ru.mirea.maximister.barbershopbackend.dto.users.responses.UserList;
 import ru.mirea.maximister.barbershopbackend.exceptions.UserNotFoundException;

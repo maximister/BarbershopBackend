@@ -12,9 +12,7 @@ import ru.mirea.maximister.barbershopbackend.dto.admin.requests.RevokeRoleReques
 import ru.mirea.maximister.barbershopbackend.dto.admin.responses.BanUserResponse;
 import ru.mirea.maximister.barbershopbackend.dto.service.requests.AddServiceRequest;
 import ru.mirea.maximister.barbershopbackend.dto.service.requests.DeleteServiceRequest;
-import ru.mirea.maximister.barbershopbackend.exceptions.ServiceAlreadyExistsException;
-import ru.mirea.maximister.barbershopbackend.exceptions.ServiceNotFoundException;
-import ru.mirea.maximister.barbershopbackend.exceptions.UserRoleException;
+import ru.mirea.maximister.barbershopbackend.exceptions.*;
 import ru.mirea.maximister.barbershopbackend.repository.ServiceRepository;
 import ru.mirea.maximister.barbershopbackend.repository.UserRepository;
 import ru.mirea.maximister.barbershopbackend.utils.DateUtils;
@@ -40,7 +38,7 @@ public class AdminService {
     @Transactional
     public BanUserResponse banUser(BanUserRequest request) {
         User user = userRepository.findByEmail(request.email())
-                .orElseThrow(() -> new UsernameNotFoundException(request.email()));
+                .orElseThrow(() -> new UserNotFoundException(request.email()));
 
         user.setActive(false);
         userRepository.setUserIsActive(user.getId(), false);
@@ -80,7 +78,7 @@ public class AdminService {
             DateUtils.validateServiceDuration(request.duration());
         } catch (IllegalArgumentException e) {
             log.info("Error during adding service: {}", e.getMessage());
-            throw new DateTimeException(e.getMessage());
+            throw new ServerDateTimeException(e.getMessage());
         }
 
         Service service = Service.builder()

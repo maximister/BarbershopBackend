@@ -4,7 +4,7 @@ import lombok.AllArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
-import ru.mirea.maximister.barbershopbackend.dto.mappers.UserToDtoMapper;
+import ru.mirea.maximister.barbershopbackend.mappers.UserToDtoMapper;
 import ru.mirea.maximister.barbershopbackend.dto.users.requests.DeleteUserRequest;
 import ru.mirea.maximister.barbershopbackend.services.UserService;
 
@@ -15,7 +15,6 @@ public class UserController {
     private final UserService userService;
     private final UserToDtoMapper mapper;
 
-    //+
     @GetMapping("/{id}")
     public ResponseEntity<?> findById(@PathVariable Long id) {
         return new ResponseEntity<>(
@@ -34,7 +33,6 @@ public class UserController {
     }
 
 
-    //+
     @GetMapping("/admins")
     public ResponseEntity<?> getAllAdminsByActivity() {
         return new ResponseEntity<>(
@@ -43,7 +41,6 @@ public class UserController {
         );
     }
 
-    //TODO: мб упростить clientlist, barberlist и adminlist в один лист
     @GetMapping("/clients")
     public ResponseEntity<?> getAllClientsByActivity(@RequestParam(required = false) Boolean isActive) {
         return new ResponseEntity<>(

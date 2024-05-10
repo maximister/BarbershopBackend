@@ -1,4 +1,4 @@
-package ru.mirea.maximister.barbershopbackend.dto.mappers;
+package ru.mirea.maximister.barbershopbackend.mappers;
 
 import org.mapstruct.Mapper;
 import org.mapstruct.MappingConstants;

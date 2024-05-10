@@ -9,8 +9,8 @@ import ru.mirea.maximister.barbershopbackend.domain.User;
 import ru.mirea.maximister.barbershopbackend.dto.barbershop.requests.*;
 import ru.mirea.maximister.barbershopbackend.dto.barbershop.responses.BarbershopBarbersResponse;
 import ru.mirea.maximister.barbershopbackend.dto.barbershop.responses.BarbershopList;
-import ru.mirea.maximister.barbershopbackend.dto.mappers.BarbershopToBarbershopDtoMapper;
-import ru.mirea.maximister.barbershopbackend.dto.mappers.UserToDtoMapper;
+import ru.mirea.maximister.barbershopbackend.mappers.BarbershopToBarbershopDtoMapper;
+import ru.mirea.maximister.barbershopbackend.mappers.UserToDtoMapper;
 import ru.mirea.maximister.barbershopbackend.exceptions.*;
 import ru.mirea.maximister.barbershopbackend.repository.BarbershopRepository;
 import ru.mirea.maximister.barbershopbackend.repository.ServiceRepository;
@@ -115,7 +115,7 @@ public class BarbershopService {
 
         barbershop.setCloseTime(request.closeTime());
         barbershop.setOpenTime(request.openTime());
-        barbershopRepository.save(barbershop);
+        //barbershopRepository.save(barbershop);
 
         log.info("Successfully updated barbershop work time by request: {}", request);
     }

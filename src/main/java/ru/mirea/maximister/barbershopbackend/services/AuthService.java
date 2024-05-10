@@ -62,12 +62,6 @@ public class AuthService {
                 () -> new UserNotFoundException(request.email())
         );
 
-        //TODO: delete
-//        if (!encoder.matches(request.password(), user.getPassword())) {
-//            log.info("Error during matching password from user {}", user.getEmail());
-//            throw new PasswordMatchingException();
-//        }
-
         var jwt = jwtService.generateToken(user);
         return new JwtAuthenticationResponse(jwt);
     }
